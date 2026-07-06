@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { settings, moveResizeElement, removeElement, setPageBackground } from '../lib/settings';
+import {
+  settings,
+  moveResizeElement,
+  removeElement,
+  renamePage,
+  setPageBackground,
+} from '../lib/settings';
 import { elementDefs } from './elements';
 import { AsyncView } from '../components/AsyncView';
 import { EmptyState } from '../components/EmptyState';
@@ -164,7 +170,13 @@ export default function GridPage({ pageId }: { pageId: string }) {
           <button class={styles.addBtn} onClick={() => setBgOpen(true)}>
             Background…
           </button>
-          <span class={styles.toolbarTitle}>{page.title}</span>
+          <input
+            class={styles.toolbarTitle}
+            type="text"
+            value={page.title}
+            aria-label="Page name"
+            onInput={(e) => renamePage(pageId, (e.target as HTMLInputElement).value)}
+          />
           <button
             class={styles.doneBtn}
             onClick={() => {

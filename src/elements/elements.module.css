@@ -316,12 +316,22 @@
   background: var(--surface-2);
   cursor: pointer;
   font-weight: 650;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .toggleOn {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--light-accent, var(--accent)) 18%, transparent);
+  border-color: var(--light-accent, var(--accent));
+  color: var(--light-accent, var(--accent));
+}
+
+/* container sets --light-accent to the light's live color */
+.lightControls {
+  display: grid;
+  gap: 16px;
 }
 
 .sliderRow {
@@ -333,7 +343,35 @@
 
 .sliderRow input[type='range'] {
   width: 100%;
-  accent-color: var(--accent);
+  accent-color: var(--light-accent, var(--accent));
+  transition: accent-color 0.25s ease;
+}
+
+.moreColors {
+  justify-self: start;
+  background: none;
+  border: none;
+  color: var(--light-accent, var(--accent));
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.paletteRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.paletteRow input[type='color'] {
+  width: 64px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: 3px;
+  cursor: pointer;
 }
 
 .tempSlider {

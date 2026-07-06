@@ -31,8 +31,13 @@ export interface AppSettings {
   pages: PageDef[];
   /** Theme id from src/lib/themes.ts; unknown ids fall back to orange visually. */
   theme: string;
-  /** dim the display between 22:00 and 07:00 */
+  /** dim the display during the configured window */
   nightDim: boolean;
+  /** window start/end, 'HH:MM' (may wrap past midnight) */
+  nightDimStart: string;
+  nightDimEnd: string;
+  /** dim strength in percent (10–90) */
+  nightDimAmount: number;
   weather: { entityId: string | null };
   presence: { personIds: string[] | null };
   calendars: { selected: string[] | null };
@@ -80,6 +85,9 @@ function defaults(): AppSettings {
     pages: [defaultMainPage(), defaultCamerasPage()],
     theme: 'orange',
     nightDim: false,
+    nightDimStart: '22:00',
+    nightDimEnd: '07:00',
+    nightDimAmount: 40,
     weather: { entityId: null },
     presence: { personIds: null },
     calendars: { selected: null },
@@ -88,6 +96,10 @@ function defaults(): AppSettings {
 
 function isStringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every((x) => typeof x === 'string');
+}
+
+function isTimeString(v: unknown): v is string {
+  return typeof v === 'string' && /^\d{1,2}:\d{2}$/.test(v);
 }
 
 function toInt(v: unknown): number | null {
@@ -195,6 +207,12 @@ function normalize(raw: unknown): AppSettings {
     pages: normalizePages(r.pages),
     theme: typeof r.theme === 'string' && r.theme ? r.theme : base.theme,
     nightDim: r.nightDim === true,
+    nightDimStart: isTimeString(r.nightDimStart) ? r.nightDimStart : base.nightDimStart,
+    nightDimEnd: isTimeString(r.nightDimEnd) ? r.nightDimEnd : base.nightDimEnd,
+    nightDimAmount:
+      typeof r.nightDimAmount === 'number' && Number.isFinite(r.nightDimAmount)
+        ? Math.min(Math.max(Math.round(r.nightDimAmount), 10), 90)
+        : base.nightDimAmount,
     weather: {
       entityId:
         r.weather && typeof (r.weather as { entityId?: unknown }).entityId === 'string'

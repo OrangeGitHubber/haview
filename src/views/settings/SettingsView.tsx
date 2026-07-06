@@ -101,8 +101,47 @@ export default function SettingsView() {
             checked={s.nightDim}
             onChange={(e) => updateSettings({ nightDim: (e.target as HTMLInputElement).checked })}
           />
-          Dim the display at night (22:00 – 07:00)
+          Dim the display at night
         </label>
+        {s.nightDim && (
+          <div class={styles.fieldRow}>
+            <label class={styles.field}>
+              From
+              <input
+                type="time"
+                value={s.nightDimStart}
+                onChange={(e) =>
+                  updateSettings({ nightDimStart: (e.target as HTMLInputElement).value })
+                }
+              />
+            </label>
+            <label class={styles.field}>
+              Until
+              <input
+                type="time"
+                value={s.nightDimEnd}
+                onChange={(e) =>
+                  updateSettings({ nightDimEnd: (e.target as HTMLInputElement).value })
+                }
+              />
+            </label>
+            <label class={styles.field}>
+              Dim %
+              <input
+                type="number"
+                min={10}
+                max={90}
+                value={s.nightDimAmount}
+                onChange={(e) => {
+                  const n = Math.round(Number((e.target as HTMLInputElement).value));
+                  updateSettings({
+                    nightDimAmount: Number.isFinite(n) ? Math.min(Math.max(n, 10), 90) : 40,
+                  });
+                }}
+              />
+            </label>
+          </div>
+        )}
       </section>
 
       <section class={styles.section}>

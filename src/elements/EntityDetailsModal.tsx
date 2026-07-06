@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import type { HassEntity } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { useEntity } from '../lib/ha/entities';
@@ -56,12 +57,39 @@ const SWATCHES: [number, number][] = [
   [330, 55],
 ];
 
+function toHex(rgb: unknown): string {
+  if (Array.isArray(rgb) && rgb.length >= 3) {
+    return (
+      '#' +
+      rgb
+        .slice(0, 3)
+        .map((c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0'))
+        .join('')
+    );
+  }
+  return '#ffcc66';
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
 function LightControls({ entity }: { entity: HassEntity }) {
   const id = entity.entity_id;
   const caps = lightCaps(entity);
   const isOn = entity.state === 'on';
+  const [palette, setPalette] = useState(false);
   const brightness = entity.attributes.brightness;
   const pct = typeof brightness === 'number' ? Math.round((brightness / 255) * 100) : 0;
+  // controls take on the light's live color; updates in realtime as the
+  // entity's state changes after each service call
+  const rgb = entity.attributes.rgb_color;
+  const liveColor =
+    isOn && Array.isArray(rgb) && rgb.length >= 3
+      ? `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`
+      : null;
+  const ctx = liveColor ? { '--light-accent': liveColor } : undefined;
   const minK =
     typeof entity.attributes.min_color_temp_kelvin === 'number'
       ? entity.attributes.min_color_temp_kelvin
@@ -76,7 +104,7 @@ function LightControls({ entity }: { entity: HassEntity }) {
       : Math.round((minK + maxK) / 2);
 
   return (
-    <>
+    <div class={styles.lightControls} style={ctx}>
       <button
         class={`${styles.toggleBtn}${isOn ? ` ${styles.toggleOn}` : ''}`}
         onClick={() => callSvc('homeassistant', 'toggle', undefined, { entity_id: id })}
@@ -142,9 +170,30 @@ function LightControls({ entity }: { entity: HassEntity }) {
               />
             ))}
           </div>
+          <button class={styles.moreColors} onClick={() => setPalette(!palette)}>
+            Custom color {palette ? '▴' : '▾'}
+          </button>
+          {palette && (
+            <label class={styles.paletteRow}>
+              <input
+                type="color"
+                value={toHex(rgb)}
+                disabled={!isOn}
+                onChange={(e) =>
+                  callSvc(
+                    'light',
+                    'turn_on',
+                    { rgb_color: hexToRgb((e.target as HTMLInputElement).value) },
+                    { entity_id: id },
+                  )
+                }
+              />
+              <span class={styles.detailDim}>Pick any color from the palette</span>
+            </label>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

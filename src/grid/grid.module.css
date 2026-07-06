@@ -15,13 +15,28 @@
   border-radius: var(--radius);
 }
 
+/* editable page name in the ribbon */
 .toolbarTitle {
   flex: 1;
+  min-width: 0;
   color: var(--text-dim);
+  font: inherit;
   font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.toolbarTitle:hover {
+  border-color: var(--border);
+}
+
+.toolbarTitle:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .addBtn {
@@ -354,6 +369,40 @@
   background: var(--accent-dim);
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.areaBtnList {
+  display: grid;
+  gap: 6px;
+}
+
+.areaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+
+.areaBtn:hover {
+  border-color: var(--accent);
+}
+
+.backBtn {
+  justify-self: start;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
 }
 
 .areaGroup {

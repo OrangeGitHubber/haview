@@ -37,8 +37,18 @@ export function Shell() {
       );
   }
 
-  const hour = new Date(minuteTick.value).getHours();
-  const nightDim = settings.value.nightDim && (hour >= 22 || hour < 7);
+  const s = settings.value;
+  const d = new Date(minuteTick.value);
+  const cur = d.getHours() * 60 + d.getMinutes();
+  const toMin = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return (h % 24) * 60 + (m || 0);
+  };
+  const start = toMin(s.nightDimStart);
+  const end = toMin(s.nightDimEnd);
+  // window may wrap past midnight (22:00 → 07:00)
+  const inWindow = start <= end ? cur >= start && cur < end : cur >= start || cur < end;
+  const nightDim = s.nightDim && inWindow;
 
   return (
     <div class="shell">
@@ -46,7 +56,13 @@ export function Shell() {
       <StatusBanner />
       <Nav />
       <main class="shell-main">{content}</main>
-      {nightDim && <div class="night-overlay" aria-hidden="true" />}
+      {nightDim && (
+        <div
+          class="night-overlay"
+          style={{ background: `rgba(0, 0, 0, ${s.nightDimAmount / 100})` }}
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 }

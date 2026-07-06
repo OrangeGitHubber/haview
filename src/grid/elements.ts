@@ -60,6 +60,7 @@ export const elementDefs: Record<string, ElementDef> = {
     type: 'clock',
     title: 'Clock',
     load: () => import('../elements/ClockCard'),
+    optionsLoader: () => import('../elements/ClockOptionsEditor'),
     defaultSize: { w: 3, h: 2 },
     minSize: { w: 1, h: 1 },
   },
