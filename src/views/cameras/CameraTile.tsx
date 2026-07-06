@@ -12,7 +12,11 @@ export function CameraTile({
   onOpen: () => void;
 }) {
   const unavailable = entity.state === 'unavailable';
-  const { src, stale } = useSnapshot(entity.entity_id, staggerMs);
+  const { src, stale } = useSnapshot(
+    entity.entity_id,
+    staggerMs,
+    entity.attributes.entity_picture as string | undefined,
+  );
   const name = (entity.attributes.friendly_name as string | undefined) ?? entity.entity_id;
 
   return (
@@ -25,7 +29,13 @@ export function CameraTile({
       {src ? (
         <img src={src} alt={name} loading="lazy" />
       ) : (
-        <div class={styles.placeholder}>{unavailable ? 'Unavailable' : 'Loading…'}</div>
+        <div class={styles.placeholder}>
+          {unavailable
+            ? 'Unavailable'
+            : stale
+              ? 'No snapshot — tap for live view'
+              : 'Loading…'}
+        </div>
       )}
       <span class={styles.name}>{name}</span>
       {stale && !unavailable && (

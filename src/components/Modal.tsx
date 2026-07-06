@@ -23,7 +23,15 @@ export function Modal({
   }, [onClose]);
 
   return (
-    <div class="modal-overlay" onClick={onClose}>
+    // stopPropagation on the overlay too: a modal may be rendered inside a
+    // clickable card, and its clicks must never reach that card's handlers
+    <div
+      class="modal-overlay"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
       <div
         class="modal-panel"
         style={{ maxWidth: `${maxWidth}px` }}

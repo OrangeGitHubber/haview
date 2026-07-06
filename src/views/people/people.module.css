@@ -79,3 +79,16 @@
   background: var(--accent-dim);
   color: var(--accent);
 }
+
+.chipDriving {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--yellow) 18%, transparent);
+  color: var(--yellow);
+}
+
+.chipDriving svg {
+  width: 15px;
+  height: 15px;
+}

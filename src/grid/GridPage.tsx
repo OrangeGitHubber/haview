@@ -132,14 +132,21 @@ export default function GridPage({ pageId }: { pageId: string }) {
   });
 
   const finishDrag = () => {
-    if (drag && dragSnap && dragValid) {
-      const { start } = drag;
-      const moved =
-        dragSnap.x !== start.x ||
-        dragSnap.y !== start.y ||
-        dragSnap.w !== start.w ||
-        dragSnap.h !== start.h;
-      if (moved) moveResizeElement(pageId, drag.id, dragSnap);
+    if (drag) {
+      // a press that never really moved is a tap → open the element's options
+      const isTap = drag.mode === 'move' && Math.abs(drag.dx) < 6 && Math.abs(drag.dy) < 6;
+      if (isTap) {
+        const el = elements.find((e) => e.id === drag.id);
+        if (el && elementDefs[el.type]?.optionsLoader) setOptionsFor(el.id);
+      } else if (dragSnap && dragValid) {
+        const { start } = drag;
+        const moved =
+          dragSnap.x !== start.x ||
+          dragSnap.y !== start.y ||
+          dragSnap.w !== start.w ||
+          dragSnap.h !== start.h;
+        if (moved) moveResizeElement(pageId, drag.id, dragSnap);
+      }
     }
     setDrag(null); // invalid drops just clear; CSS transition animates the revert
   };

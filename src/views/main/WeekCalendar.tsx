@@ -86,10 +86,15 @@ function buildDays(events: CalendarEvent[], count: number): Day[] {
   return days;
 }
 
+function fmtTime(d: Date): string {
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
 function timeLabel(ev: CalendarEvent, day: Day): string {
   if (ev.allDay) return 'All day';
-  if (ev.start < day.start) return '…'; // continues from a previous day
-  return ev.start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  const from = ev.start < day.start ? '…' : fmtTime(ev.start); // continues from a previous day
+  const to = ev.end > day.end ? '…' : fmtTime(ev.end); // continues into the next day
+  return `${from} – ${to}`;
 }
 
 function agendaDateLabel(ev: CalendarEvent): string {
@@ -99,7 +104,7 @@ function agendaDateLabel(ev: CalendarEvent): string {
     month: 'short',
   });
   if (ev.allDay) return label;
-  return `${label} · ${ev.start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  return `${label} · ${fmtTime(ev.start)} – ${fmtTime(ev.end)}`;
 }
 
 function agoLabel(lastFetched: number): string {

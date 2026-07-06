@@ -36,7 +36,24 @@ export const elementDefs: Record<string, ElementDef> = {
     type: 'entity',
     title: 'Entity card',
     load: () => import('../elements/EntityCard'),
+    optionsLoader: () => import('../elements/EntityOptionsEditor'),
     defaultSize: { w: 3, h: 2 },
+    minSize: { w: 1, h: 1 },
+  },
+  media: {
+    type: 'media',
+    title: 'Media player',
+    load: () => import('../elements/MediaCard'),
+    optionsLoader: () => import('../elements/MediaOptionsEditor'),
+    defaultSize: { w: 4, h: 3 },
+    minSize: { w: 2, h: 2 },
+  },
+  camera: {
+    type: 'camera',
+    title: 'Camera',
+    load: () => import('../elements/CameraCard'),
+    optionsLoader: () => import('../elements/CameraOptionsEditor'),
+    defaultSize: { w: 4, h: 3 },
     minSize: { w: 2, h: 2 },
   },
   weather: {
@@ -50,8 +67,9 @@ export const elementDefs: Record<string, ElementDef> = {
     type: 'presence',
     title: 'Family presence',
     load: () => import('../views/main/presence/PresenceWidget'),
+    optionsLoader: () => import('../views/main/presence/PresenceOptionsEditor'),
     defaultSize: { w: 6, h: 3 },
-    minSize: { w: 3, h: 2 },
+    minSize: { w: 2, h: 2 },
   },
   calendar: {
     type: 'calendar',
@@ -59,6 +77,6 @@ export const elementDefs: Record<string, ElementDef> = {
     load: () => import('../views/main/WeekCalendar').then((m) => ({ default: m.WeekCalendar })),
     optionsLoader: () => import('../views/main/CalendarOptionsEditor'),
     defaultSize: { w: 12, h: 4 },
-    minSize: { w: 3, h: 3 },
+    minSize: { w: 1, h: 2 },
   },
 };

@@ -1,0 +1,161 @@
+/* Shared styles for per-element options editors (gear badge in edit mode). */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 10px 12px 18px;
+  font-weight: 650;
+  border-bottom: 1px solid var(--border);
+}
+
+.close {
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.close:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.form {
+  padding: 16px 18px 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.row {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.row input[type='text'],
+.row input[type='search'] {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.row input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.row select {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  max-width: 100%;
+}
+
+.num {
+  width: 90px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.seg {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.segBtn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.segActive {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.checklist {
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.checkItem:hover {
+  background: var(--surface-2);
+}
+
+.checkItem input {
+  accent-color: var(--accent);
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+
+.checkName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkId {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-family: ui-monospace, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40%;
+}
+
+.dim {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.removeBtn {
+  justify-self: start;
+  padding: 9px 18px;
+  border: 1px solid color-mix(in srgb, var(--red) 55%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: var(--red);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  background: color-mix(in srgb, var(--red) 22%, transparent);
+}

@@ -55,10 +55,12 @@
 }
 
 .containerEditing {
-  /* faint dot grid for spatial feedback while editing */
+  /* faint dot grid for spatial feedback while editing; the gradient dot sits
+     at each tile's CENTER, so shift by half a tile to land dots exactly on
+     the snap origins (k * (cellW+gap), k * (row+gap)) */
   background-image: radial-gradient(circle, var(--border) 1.5px, transparent 1.5px);
   background-size: var(--cell-w, 48px) calc(var(--grid-row) + var(--grid-gap));
-  background-position: -5px -5px;
+  background-position: calc(var(--cell-w, 48px) / -2) calc((var(--grid-row) + var(--grid-gap)) / -2);
   border-radius: var(--radius);
   /* dragging must never start a text selection */
   user-select: none;
@@ -85,6 +87,7 @@
 
 .itemContent > * {
   height: 100%;
+  width: 100%;
 }
 
 .itemEditing .itemContent {

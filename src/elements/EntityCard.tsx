@@ -119,10 +119,21 @@ export default function EntityCard({ element }: ElementProps) {
     }
   } else if (domain === 'light' && isOn) {
     const b = entity.attributes.brightness;
-    if (typeof b === 'number') mainText = `${Math.round((b / 255) * 100)}%`;
+    if (typeof b === 'number') mainText = `On · ${Math.round((b / 255) * 100)}%`;
+  }
+
+  // tint the bulb with the light's actual color (HA also derives rgb_color
+  // for color-temp lights, so warm/cold white shows too)
+  let glyphStyle: Record<string, string> | undefined;
+  if (domain === 'light' && isOn) {
+    const rgb = entity.attributes.rgb_color;
+    if (Array.isArray(rgb) && rgb.length >= 3) {
+      glyphStyle = { color: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})` };
+    }
   }
 
   return (
+    <>
     <div
       class={cls}
       onClick={onTap ?? undefined}
@@ -131,7 +142,7 @@ export default function EntityCard({ element }: ElementProps) {
     >
       <div class={styles.cardTop}>
         {glyph && (
-          <svg class={styles.glyph} viewBox="0 0 24 24" aria-hidden="true">
+          <svg class={styles.glyph} style={glyphStyle} viewBox="0 0 24 24" aria-hidden="true">
             <path d={glyph} fill="currentColor" />
           </svg>
         )}
@@ -177,7 +188,9 @@ export default function EntityCard({ element }: ElementProps) {
       </div>
       {subText && <span class={styles.sub}>{subText}</span>}
       <span class={styles.name}>{name}</span>
-      {details && <EntityDetailsModal entityId={entityId} onClose={() => setDetails(false)} />}
     </div>
+    {/* outside the card div: its clicks must not bubble into onTap */}
+    {details && <EntityDetailsModal entityId={entityId} onClose={() => setDetails(false)} />}
+    </>
   );
 }

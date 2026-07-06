@@ -1,15 +1,16 @@
 import { Modal } from '../../components/Modal';
-import { settings, updateElementOptions } from '../../lib/settings';
+import { settings, updateElementOptions, removeElement } from '../../lib/settings';
 import { useEntitiesByDomain } from '../../lib/ha/entities';
 import { friendlyName } from '../settings/EntitySelect';
 import { calendarColor } from './useCalendarEvents';
 import type { GridElement } from '../../grid/types';
 import type { CalendarOptions } from './WeekCalendar';
+import opt from '../../components/options.module.css';
 import styles from './main.module.css';
 
 /**
- * Per-instance settings for a calendar element (gear badge in page edit
- * mode). Live-edit: every change persists immediately, Close just exits.
+ * Per-instance settings for a calendar element (gear badge / tap in page
+ * edit mode). Live-edit: every change persists immediately, Close exits.
  */
 export default function CalendarOptionsEditor({
   pageId,
@@ -52,14 +53,14 @@ export default function CalendarOptionsEditor({
 
   return (
     <Modal onClose={onClose} maxWidth={420}>
-      <header class={styles.optHeader}>
+      <header class={opt.header}>
         <span>Calendar settings</span>
-        <button class={styles.optClose} onClick={onClose} aria-label="Close">
+        <button class={opt.close} onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
-      <div class={styles.optForm}>
-        <label class={styles.optRow}>
+      <div class={opt.form}>
+        <label class={opt.row}>
           Title
           <input
             type="text"
@@ -69,17 +70,17 @@ export default function CalendarOptionsEditor({
           />
         </label>
 
-        <div class={styles.optRow}>
+        <div class={opt.row}>
           Show
-          <div class={styles.optSeg}>
+          <div class={opt.seg}>
             <button
-              class={`${styles.segBtn}${mode === 'week' ? ` ${styles.segActive}` : ''}`}
+              class={`${opt.segBtn}${mode === 'week' ? ` ${opt.segActive}` : ''}`}
               onClick={() => set({ mode: 'week' })}
             >
               Day board
             </button>
             <button
-              class={`${styles.segBtn}${mode === 'agenda' ? ` ${styles.segActive}` : ''}`}
+              class={`${opt.segBtn}${mode === 'agenda' ? ` ${opt.segActive}` : ''}`}
               onClick={() => set({ mode: 'agenda' })}
             >
               Next entries
@@ -89,10 +90,10 @@ export default function CalendarOptionsEditor({
 
         {mode === 'week' && (
           <>
-            <label class={styles.optRow}>
+            <label class={opt.row}>
               Days
               <input
-                class={styles.optNum}
+                class={opt.num}
                 type="number"
                 min={1}
                 max={14}
@@ -102,17 +103,17 @@ export default function CalendarOptionsEditor({
                 }
               />
             </label>
-            <div class={styles.optRow}>
+            <div class={opt.row}>
               Layout
-              <div class={styles.optSeg}>
+              <div class={opt.seg}>
                 <button
-                  class={`${styles.segBtn}${!o.vertical ? ` ${styles.segActive}` : ''}`}
+                  class={`${opt.segBtn}${!o.vertical ? ` ${opt.segActive}` : ''}`}
                   onClick={() => set({ vertical: false })}
                 >
                   Columns
                 </button>
                 <button
-                  class={`${styles.segBtn}${o.vertical ? ` ${styles.segActive}` : ''}`}
+                  class={`${opt.segBtn}${o.vertical ? ` ${opt.segActive}` : ''}`}
                   onClick={() => set({ vertical: true })}
                 >
                   Stacked
@@ -123,10 +124,10 @@ export default function CalendarOptionsEditor({
         )}
 
         {mode === 'agenda' && (
-          <label class={styles.optRow}>
+          <label class={opt.row}>
             Entries
             <input
-              class={styles.optNum}
+              class={opt.num}
               type="number"
               min={1}
               max={20}
@@ -138,24 +139,24 @@ export default function CalendarOptionsEditor({
           </label>
         )}
 
-        <div class={styles.optRow}>
+        <div class={opt.row}>
           Calendars
-          <div class={styles.optSeg}>
+          <div class={opt.seg}>
             <button
-              class={`${styles.segBtn}${calMode === 'global' ? ` ${styles.segActive}` : ''}`}
+              class={`${opt.segBtn}${calMode === 'global' ? ` ${opt.segActive}` : ''}`}
               onClick={() => set({ calendars: undefined })}
               title="Follow the selection in Settings → Calendars"
             >
               Global
             </button>
             <button
-              class={`${styles.segBtn}${calMode === 'all' ? ` ${styles.segActive}` : ''}`}
+              class={`${opt.segBtn}${calMode === 'all' ? ` ${opt.segActive}` : ''}`}
               onClick={() => set({ calendars: null })}
             >
               All
             </button>
             <button
-              class={`${styles.segBtn}${calMode === 'custom' ? ` ${styles.segActive}` : ''}`}
+              class={`${opt.segBtn}${calMode === 'custom' ? ` ${opt.segActive}` : ''}`}
               onClick={startCustom}
             >
               Choose…
@@ -164,13 +165,13 @@ export default function CalendarOptionsEditor({
         </div>
 
         {calMode === 'custom' && (
-          <ul class={styles.calChecklist}>
+          <ul class={opt.checklist}>
             {calendarEntities.length === 0 && (
-              <li class={styles.optDim}>No calendar entities found.</li>
+              <li class={opt.dim}>No calendar entities found.</li>
             )}
             {calendarEntities.map((e) => (
               <li key={e.entity_id}>
-                <label class={styles.calCheckItem}>
+                <label class={opt.checkItem}>
                   <input
                     type="checkbox"
                     checked={Array.isArray(o.calendars) && o.calendars.includes(e.entity_id)}
@@ -186,6 +187,16 @@ export default function CalendarOptionsEditor({
             ))}
           </ul>
         )}
+
+        <button
+          class={opt.removeBtn}
+          onClick={() => {
+            removeElement(pageId, element.id);
+            onClose();
+          }}
+        >
+          Remove element
+        </button>
       </div>
     </Modal>
   );

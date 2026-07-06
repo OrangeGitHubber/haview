@@ -26,6 +26,17 @@
   gap: 8px;
 }
 
+.listH {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.listH > * {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
 .hint {
   display: grid;
   gap: 10px;

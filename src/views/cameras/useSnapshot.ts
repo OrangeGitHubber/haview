@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { getSignedUrl } from '../../lib/ha/signedPath';
 import { connectionStatus } from '../../lib/ha/connection';
+import { loadConfig } from '../../lib/config';
 
 const REFRESH_MS = 10_000;
 const STALE_AFTER_MISSES = 3;
@@ -21,7 +22,7 @@ function preload(url: string): Promise<void> {
  * `staggerMs` offsets each tile's interval so a grid doesn't fire all
  * requests in one burst.
  */
-export function useSnapshot(entityId: string, staggerMs: number) {
+export function useSnapshot(entityId: string, staggerMs: number, picture?: string) {
   const [src, setSrc] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
   const missed = useRef(0);
@@ -33,8 +34,16 @@ export function useSnapshot(entityId: string, staggerMs: number) {
     async function tick() {
       if (disposed || document.hidden || connectionStatus.peek() !== 'connected') return;
       try {
-        const signed = await getSignedUrl(`/api/camera_proxy/${entityId}`, 300);
-        const url = `${signed}${signed.includes('?') ? '&' : '?'}t=${Date.now()}`;
+        // Prefer the camera's entity_picture (carries its own access token —
+        // the same URL HA's UI uses); fall back to a signed camera_proxy path.
+        let base: string;
+        const cfg = loadConfig();
+        if (picture && picture.includes('token=') && picture.startsWith('/') && cfg) {
+          base = cfg.hassUrl + picture;
+        } else {
+          base = await getSignedUrl(`/api/camera_proxy/${entityId}`, 300);
+        }
+        const url = `${base}${base.includes('?') ? '&' : '?'}t=${Date.now()}`;
         await preload(url);
         if (disposed) return;
         missed.current = 0;
@@ -62,7 +71,7 @@ export function useSnapshot(entityId: string, staggerMs: number) {
       if (interval !== undefined) clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [entityId, staggerMs]);
+  }, [entityId, staggerMs, picture]);
 
   return { src, stale };
 }
