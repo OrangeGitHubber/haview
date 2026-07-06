@@ -310,6 +310,21 @@ export function removeElement(pageId: string, elementId: string): void {
   patchPage(pageId, { elements: page.elements.filter((e) => e.id !== elementId) });
 }
 
+/** Shallow-merges into element.options (JSON drops keys set to undefined). */
+export function updateElementOptions(
+  pageId: string,
+  elementId: string,
+  patch: Record<string, unknown>,
+): void {
+  const page = settings.peek().pages.find((p) => p.id === pageId);
+  if (!page) return;
+  patchPage(pageId, {
+    elements: page.elements.map((e) =>
+      e.id === elementId ? { ...e, options: { ...e.options, ...patch } } : e,
+    ),
+  });
+}
+
 export function moveResizeElement(pageId: string, elementId: string, rect: GridRect): void {
   const page = settings.peek().pages.find((p) => p.id === pageId);
   if (!page) return;

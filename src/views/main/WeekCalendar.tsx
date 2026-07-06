@@ -1,11 +1,50 @@
-import { useState } from 'preact/hooks';
 import { useCalendarEvents, calendarColor } from './useCalendarEvents';
 import { settings } from '../../lib/settings';
-import { CalendarPicker } from './CalendarPicker';
 import type { CalendarEvent } from '../../lib/types';
+import type { ElementProps } from '../../grid/elements';
 import styles from './main.module.css';
 
-import { GEAR_ICON } from '../../lib/icons';
+/**
+ * Calendar element. Each placed instance has its own options
+ * (element.options), edited via the gear badge in page edit mode:
+ *   title      header text (default depends on mode)
+ *   mode       'week' (day board) | 'agenda' (next N entries)
+ *   days       week mode: number of day columns (default 7)
+ *   vertical   week mode: stack days vertically instead of columns
+ *   count      agenda mode: how many upcoming entries (default 5)
+ *   calendars  undefined = follow the global Settings selection,
+ *              null = all calendars, string[] = exactly these
+ */
+export interface CalendarOptions {
+  title?: string;
+  mode?: 'week' | 'agenda';
+  days?: number;
+  vertical?: boolean;
+  count?: number;
+  calendars?: string[] | null;
+}
+
+export function calendarOptionsOf(element: ElementProps['element']): Required<CalendarOptions> {
+  const o = (element.options ?? {}) as CalendarOptions;
+  const mode = o.mode === 'agenda' ? 'agenda' : 'week';
+  return {
+    mode,
+    title:
+      typeof o.title === 'string' && o.title.trim()
+        ? o.title
+        : mode === 'agenda'
+          ? 'Upcoming'
+          : 'This week',
+    days: typeof o.days === 'number' ? Math.min(Math.max(Math.round(o.days), 1), 14) : 7,
+    vertical: o.vertical === true,
+    count: typeof o.count === 'number' ? Math.min(Math.max(Math.round(o.count), 1), 20) : 5,
+    calendars: o.calendars !== undefined ? o.calendars : settings.value.calendars.selected,
+  };
+}
+
+/** Fetch window for agenda mode — far enough out for sparse calendars
+    (public holidays), still one cheap REST query per calendar. */
+const AGENDA_WINDOW_DAYS = 365;
 
 interface Day {
   start: Date;
@@ -16,11 +55,11 @@ interface Day {
   events: CalendarEvent[];
 }
 
-function buildDays(events: CalendarEvent[]): Day[] {
+function buildDays(events: CalendarEvent[], count: number): Day[] {
   const days: Day[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < count; i++) {
     const start = new Date(today.getTime());
     start.setDate(start.getDate() + i);
     const end = new Date(start.getTime());
@@ -53,39 +92,38 @@ function timeLabel(ev: CalendarEvent, day: Day): string {
   return ev.start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
+function agendaDateLabel(ev: CalendarEvent): string {
+  const label = ev.start.toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+  if (ev.allDay) return label;
+  return `${label} · ${ev.start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 function agoLabel(lastFetched: number): string {
   const m = Math.floor((Date.now() - lastFetched) / 60_000);
   return m <= 0 ? 'just now' : `${m}m ago`;
 }
 
-export function WeekCalendar() {
-  const { events, calendars, loading, error, lastFetched, refresh } = useCalendarEvents(7);
-  const [pickerOpen, setPickerOpen] = useState(false);
-
-  const sel = settings.value.calendars.selected;
-  const active = sel === null ? null : new Set(sel);
-  const filtered = active === null ? events : events.filter((ev) => active.has(ev.calendarId));
-  const days = buildDays(filtered);
+export function WeekCalendar({ element }: ElementProps) {
+  const opt = calendarOptionsOf(element);
+  const windowDays = opt.mode === 'agenda' ? AGENDA_WINDOW_DAYS : opt.days;
+  const { events, loading, error, lastFetched, refresh } = useCalendarEvents(
+    windowDays,
+    opt.calendars,
+  );
 
   return (
     <section class={styles.week}>
       <header class={styles.weekHeader}>
-        <h2 class={styles.weekTitle}>This week</h2>
+        <h2 class={styles.weekTitle}>{opt.title}</h2>
         <div class={styles.weekTools}>
           {error && lastFetched !== null && <span class={styles.offline}>offline</span>}
           {lastFetched !== null && (
             <span class={styles.updated}>updated {agoLabel(lastFetched)}</span>
           )}
-          <button
-            class={styles.gearBtn}
-            onClick={() => setPickerOpen(true)}
-            aria-label="Choose calendars"
-            title="Choose calendars"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d={GEAR_ICON} />
-            </svg>
-          </button>
         </div>
       </header>
 
@@ -96,43 +134,107 @@ export function WeekCalendar() {
             : `Could not load calendars (${error.message}).`}{' '}
           <button onClick={refresh}>Retry</button>
         </div>
+      ) : opt.mode === 'agenda' ? (
+        <AgendaList events={events} count={opt.count} loading={loading} />
       ) : (
-        <div class={styles.weekScroll}>
-          <div class={styles.weekGrid}>
-            {days.map((day) => (
-              <div key={day.start.getTime()} class={`${styles.day}${day.isToday ? ` ${styles.today}` : ''}`}>
-                <header class={styles.dayHeader}>
-                  <span class={styles.dayName}>{day.weekday}</span>
-                  <span class={styles.dayDate}>{day.dateLabel}</span>
-                </header>
-                <div class={styles.dayEvents}>
-                  {loading && events.length === 0 ? (
-                    <>
-                      <div class={styles.eventSkeleton} />
-                      <div class={styles.eventSkeleton} />
-                    </>
-                  ) : (
-                    day.events.map((ev, i) => (
-                      <div class={styles.event} key={i} title={ev.calendarName}>
-                        <span
-                          class={styles.eventDot}
-                          style={{ background: calendarColor(ev.calendarId) }}
-                        />
-                        <div class={styles.eventText}>
-                          <span class={styles.eventTime}>{timeLabel(ev, day)}</span>
-                          <span class={styles.eventSummary}>{ev.summary}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ))}
+        <WeekBoard
+          events={events}
+          days={opt.days}
+          vertical={opt.vertical}
+          loading={loading}
+        />
+      )}
+    </section>
+  );
+}
+
+function WeekBoard({
+  events,
+  days,
+  vertical,
+  loading,
+}: {
+  events: CalendarEvent[];
+  days: number;
+  vertical: boolean;
+  loading: boolean;
+}) {
+  const board = buildDays(events, days);
+  return (
+    <div class={vertical ? '' : styles.weekScroll}>
+      <div
+        class={vertical ? styles.weekGridV : styles.weekGrid}
+        style={vertical ? undefined : { gridTemplateColumns: `repeat(${days}, minmax(158px, 1fr))` }}
+      >
+        {board.map((day) => (
+          <div
+            key={day.start.getTime()}
+            class={`${styles.day}${day.isToday ? ` ${styles.today}` : ''}`}
+          >
+            <header class={styles.dayHeader}>
+              <span class={styles.dayName}>{day.weekday}</span>
+              <span class={styles.dayDate}>{day.dateLabel}</span>
+            </header>
+            <div class={styles.dayEvents}>
+              {loading && events.length === 0 ? (
+                <>
+                  <div class={styles.eventSkeleton} />
+                  <div class={styles.eventSkeleton} />
+                </>
+              ) : (
+                day.events.map((ev, i) => (
+                  <div class={styles.event} key={i} title={ev.calendarName}>
+                    <span
+                      class={styles.eventDot}
+                      style={{ background: calendarColor(ev.calendarId) }}
+                    />
+                    <div class={styles.eventText}>
+                      <span class={styles.eventTime}>{timeLabel(ev, day)}</span>
+                      <span class={styles.eventSummary}>{ev.summary}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AgendaList({
+  events,
+  count,
+  loading,
+}: {
+  events: CalendarEvent[];
+  count: number;
+  loading: boolean;
+}) {
+  const now = new Date();
+  const upcoming = events.filter((ev) => ev.end > now).slice(0, count);
+  return (
+    <div class={styles.agenda}>
+      {loading && events.length === 0 && (
+        <>
+          <div class={styles.eventSkeleton} />
+          <div class={styles.eventSkeleton} />
+          <div class={styles.eventSkeleton} />
+        </>
+      )}
+      {!loading && upcoming.length === 0 && (
+        <p class={styles.agendaEmpty}>No upcoming entries.</p>
+      )}
+      {upcoming.map((ev, i) => (
+        <div class={styles.event} key={i} title={ev.calendarName}>
+          <span class={styles.eventDot} style={{ background: calendarColor(ev.calendarId) }} />
+          <div class={styles.eventText}>
+            <span class={styles.eventTime}>{agendaDateLabel(ev)}</span>
+            <span class={styles.eventSummary}>{ev.summary}</span>
           </div>
         </div>
-      )}
-
-      {pickerOpen && <CalendarPicker calendars={calendars} onClose={() => setPickerOpen(false)} />}
-    </section>
+      ))}
+    </div>
   );
 }

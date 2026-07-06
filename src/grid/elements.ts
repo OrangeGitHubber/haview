@@ -22,6 +22,11 @@ export interface ElementDef {
   /** label in the Add dialog and unknown-type fallback */
   title: string;
   load: () => Promise<{ default: AnyComponent }>;
+  /**
+   * Optional per-instance options editor, shown via a gear badge in page
+   * edit mode. Receives { pageId, element, onClose } and renders a Modal.
+   */
+  optionsLoader?: () => Promise<{ default: AnyComponent }>;
   defaultSize: { w: number; h: number };
   minSize: { w: number; h: number };
 }
@@ -50,9 +55,10 @@ export const elementDefs: Record<string, ElementDef> = {
   },
   calendar: {
     type: 'calendar',
-    title: 'Week calendar',
+    title: 'Calendar',
     load: () => import('../views/main/WeekCalendar').then((m) => ({ default: m.WeekCalendar })),
+    optionsLoader: () => import('../views/main/CalendarOptionsEditor'),
     defaultSize: { w: 12, h: 4 },
-    minSize: { w: 6, h: 4 },
+    minSize: { w: 3, h: 3 },
   },
 };

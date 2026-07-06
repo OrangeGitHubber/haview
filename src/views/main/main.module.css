@@ -77,6 +77,30 @@
   }
 }
 
+/* stacked (vertical) day layout */
+.weekGridV {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.weekGridV .day {
+  min-height: 0;
+}
+
+/* agenda (next N entries) layout */
+.agenda {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.agendaEmpty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  padding: 8px 0;
+}
+
 .day {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -194,79 +218,120 @@
   cursor: pointer;
 }
 
-/* ---------- calendar picker ---------- */
+/* ---------- calendar options editor ---------- */
 
-.pickerOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0, 0, 0, 0.6);
-  display: grid;
-  place-items: center;
-  padding: 20px;
+.optHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 10px 12px 18px;
+  font-weight: 650;
+  border-bottom: 1px solid var(--border);
 }
 
-.picker {
-  width: 100%;
-  max-width: 360px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
+.optClose {
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.optClose:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.optForm {
+  padding: 16px 18px 18px;
   display: grid;
   gap: 14px;
 }
 
-.pickerTitle {
-  font-size: 1.05rem;
-  font-weight: 650;
-}
-
-.pickerEmpty {
+.optRow {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
   color: var(--text-dim);
-  font-size: 0.9rem;
 }
 
-.pickerList {
+.optRow input[type='text'] {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.optRow input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.optNum {
+  width: 90px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.optSeg {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.segBtn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.segActive {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.calChecklist {
   list-style: none;
   display: grid;
-  gap: 4px;
-  max-height: 50vh;
+  gap: 2px;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
-.pickerItem {
+.calCheckItem {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  min-width: 0;
 }
 
-.pickerItem:hover {
+.calCheckItem:hover {
   background: var(--surface-2);
 }
 
-.pickerItem input {
+.calCheckItem input {
   accent-color: var(--accent);
   width: 17px;
   height: 17px;
+  flex: 0 0 auto;
 }
 
-.pickerDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.pickerDone {
-  padding: 9px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: #1d1206;
-  font-weight: 650;
-  cursor: pointer;
+.optDim {
+  color: var(--text-dim);
+  font-size: 0.85rem;
 }

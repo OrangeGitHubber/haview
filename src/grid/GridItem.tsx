@@ -1,4 +1,5 @@
 import type { ComponentChildren, JSX } from 'preact';
+import { GEAR_ICON } from '../lib/icons';
 import styles from './grid.module.css';
 
 const X_ICON =
@@ -18,6 +19,7 @@ export function GridItem({
   onMove,
   onEnd,
   onDelete,
+  onOptions,
   children,
 }: {
   style: JSX.CSSProperties;
@@ -27,6 +29,8 @@ export function GridItem({
   onMove: (clientX: number, clientY: number) => void;
   onEnd: () => void;
   onDelete: () => void;
+  /** present when the element type has a per-instance options editor */
+  onOptions?: () => void;
   children: ComponentChildren;
 }) {
   const press =
@@ -81,6 +85,18 @@ export function GridItem({
               <path d={X_ICON} fill="currentColor" />
             </svg>
           </button>
+          {onOptions && (
+            <button
+              class={styles.optionsBadge}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onOptions}
+              aria-label="Element settings"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d={GEAR_ICON} fill="currentColor" />
+              </svg>
+            </button>
+          )}
         </>
       )}
     </div>

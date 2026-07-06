@@ -42,6 +42,7 @@ export default function GridPage({ pageId }: { pageId: string }) {
   const narrow = useMediaQuery('(max-width: 699px)');
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [optionsFor, setOptionsFor] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -219,6 +220,7 @@ export default function GridPage({ pageId }: { pageId: string }) {
               }
               onEnd={finishDrag}
               onDelete={() => removeElement(pageId, el.id)}
+              onOptions={def?.optionsLoader ? () => setOptionsFor(el.id) : undefined}
             >
               {def ? (
                 <AsyncView load={def.load} props={{ pageId, element: el, editing }} />
@@ -245,6 +247,19 @@ export default function GridPage({ pageId }: { pageId: string }) {
       )}
 
       {adding && <AddElementModal pageId={pageId} onClose={() => setAdding(false)} />}
+
+      {optionsFor &&
+        (() => {
+          const el = elements.find((e) => e.id === optionsFor);
+          const loader = el ? elementDefs[el.type]?.optionsLoader : undefined;
+          if (!el || !loader) return null;
+          return (
+            <AsyncView
+              load={loader}
+              props={{ pageId, element: el, onClose: () => setOptionsFor(null) }}
+            />
+          );
+        })()}
     </div>
   );
 }

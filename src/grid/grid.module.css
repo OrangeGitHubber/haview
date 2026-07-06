@@ -165,6 +165,33 @@
   height: 15px;
 }
 
+.optionsBadge {
+  position: absolute;
+  top: -9px;
+  right: 25px;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+}
+
+.optionsBadge:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.optionsBadge svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* ---------- drop ghost ---------- */
 
 .ghost {

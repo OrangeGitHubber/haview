@@ -46,7 +46,14 @@ function parseEvent(raw: RawCalendarEvent, cal: CalendarInfo): CalendarEvent | n
   };
 }
 
-export function useCalendarEvents(days = 7): CalendarState & { refresh: () => void } {
+/**
+ * @param days  fetch window from today's midnight
+ * @param only  calendar entity_ids to fetch events for; null = all
+ */
+export function useCalendarEvents(
+  days = 7,
+  only: string[] | null = null,
+): CalendarState & { refresh: () => void } {
   const [state, setState] = useState<CalendarState>({
     events: [],
     calendars: [],
@@ -56,19 +63,25 @@ export function useCalendarEvents(days = 7): CalendarState & { refresh: () => vo
   });
   const lastFetchedRef = useRef<number | null>(null);
   const inFlight = useRef(false);
+  // stable dep key: array identity changes every render
+  const onlyKey = only === null ? '*' : only.join(',');
+  const onlyRef = useRef(only);
+  onlyRef.current = only;
 
   const refresh = useCallback(async () => {
     if (inFlight.current) return;
     inFlight.current = true;
     try {
       const calendars = await haFetch<CalendarInfo[]>('/api/calendars');
+      const sel = onlyRef.current;
+      const active = sel === null ? calendars : calendars.filter((c) => sel.includes(c.entity_id));
       const start = new Date();
       start.setHours(0, 0, 0, 0);
       const end = new Date(start.getTime() + days * 86_400_000);
       const q = `?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
 
       const perCalendar = await Promise.all(
-        calendars.map(async (cal) => {
+        active.map(async (cal) => {
           try {
             const raw = await haFetch<RawCalendarEvent[]>(
               `/api/calendars/${encodeURIComponent(cal.entity_id)}${q}`,
@@ -98,7 +111,7 @@ export function useCalendarEvents(days = 7): CalendarState & { refresh: () => vo
     } finally {
       inFlight.current = false;
     }
-  }, [days]);
+  }, [days, onlyKey]);
 
   useEffect(() => {
     refresh();
