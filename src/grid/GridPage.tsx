@@ -171,8 +171,10 @@ export default function GridPage({ pageId }: { pageId: string }) {
 
   const finishDrag = () => {
     if (drag) {
-      // a press that never really moved is a tap → open the element's options
-      const isTap = drag.mode === 'move' && Math.abs(drag.dx) < 6 && Math.abs(drag.dy) < 6;
+      // a press that barely moved is a tap → open the element's options.
+      // 14px slop so finger taps on a touchscreen still count (a mouse click
+      // is ~0px; a finger tap jitters several px).
+      const isTap = drag.mode === 'move' && Math.abs(drag.dx) < 14 && Math.abs(drag.dy) < 14;
       if (isTap) {
         const el = elements.find((e) => e.id === drag.id);
         if (el && elementDefs[el.type]?.optionsLoader) setOptionsFor(el.id);
