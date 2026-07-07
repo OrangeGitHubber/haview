@@ -99,6 +99,16 @@
   min-height: 0;
 }
 
+/* tappable header for collapsed days on phones */
+.dayHeaderTap {
+  cursor: pointer;
+  user-select: none;
+}
+
+.dayHeaderTap:hover {
+  background: var(--surface-2-card, var(--surface-2));
+}
+
 /* agenda (next N entries) layout */
 .agenda {
   display: grid;

@@ -1,6 +1,8 @@
+import { useState } from 'preact/hooks';
 import { useCalendarEvents, calendarColor } from './useCalendarEvents';
 import { settings } from '../../lib/settings';
 import { pageIcons } from '../../lib/icons';
+import { useMediaQuery } from '../../lib/useMediaQuery';
 import type { CalendarEvent } from '../../lib/types';
 import type { ElementProps } from '../../grid/elements';
 import styles from './main.module.css';
@@ -135,6 +137,8 @@ export function WeekCalendar({ element }: ElementProps) {
     windowDays,
     opt.calendars,
   );
+  // phones: stack the day board vertically and collapse all but today
+  const narrow = useMediaQuery('(max-width: 699px)');
 
   return (
     <section class={styles.week}>
@@ -158,7 +162,7 @@ export function WeekCalendar({ element }: ElementProps) {
       {error && events.length === 0 && !loading ? (
         <div class={styles.weekError}>
           {error.isLikelyCors
-            ? `Could not reach the Home Assistant REST API — usually missing CORS config. Add "${location.origin}" to http: cors_allowed_origins in configuration.yaml and restart HA.`
+            ? `Could not reach Home Assistant through the dashboard server. Check Settings → Connection and that HA is reachable from the container.`
             : `Could not load calendars (${error.message}).`}{' '}
           <button onClick={refresh}>Retry</button>
         </div>
@@ -171,6 +175,7 @@ export function WeekCalendar({ element }: ElementProps) {
           vertical={opt.vertical}
           loading={loading}
           marker={opt.marker}
+          narrow={narrow}
         />
       )}
     </section>
@@ -193,54 +198,74 @@ function WeekBoard({
   vertical,
   loading,
   marker,
+  narrow,
 }: {
   events: CalendarEvent[];
   days: number;
   vertical: boolean;
   loading: boolean;
   marker: EntryMarker;
+  narrow: boolean;
 }) {
   const board = buildDays(events, days);
-  return (
-    <div class={vertical ? '' : styles.weekScroll}>
-      <div
-        class={vertical ? styles.weekGridV : styles.weekGrid}
-        style={vertical ? undefined : { gridTemplateColumns: `repeat(${days}, minmax(158px, 1fr))` }}
-      >
-        {board.map((day) => (
-          <div
-            key={day.start.getTime()}
-            class={`${styles.day}${day.isToday ? ` ${styles.today}` : ''}`}
-          >
-            <header class={styles.dayHeader}>
-              <span class={styles.dayName}>{day.weekday}</span>
-              <span class={styles.dayDate}>{day.dateLabel}</span>
-            </header>
-            <div class={styles.dayEvents}>
-              {loading && events.length === 0 ? (
-                <>
-                  <div class={styles.eventSkeleton} />
-                  <div class={styles.eventSkeleton} />
-                </>
-              ) : (
-                day.events.map((ev, i) => (
-                  <div key={i} title={ev.calendarName} {...eventProps(marker, ev.calendarId)}>
-                    {marker === 'dot' && (
-                      <span
-                        class={styles.eventDot}
-                        style={{ background: calendarColor(ev.calendarId) }}
-                      />
-                    )}
-                    <div class={styles.eventText}>
-                      <span class={styles.eventTime}>{timeLabel(ev, day)}</span>
-                      <span class={styles.eventSummary}>{ev.summary}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+  const stacked = vertical || narrow;
+  const collapsible = narrow; // on phones, collapse every day except today
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+  const toggle = (t: number) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+
+  const dayEvents = (day: Day) =>
+    loading && events.length === 0 ? (
+      <>
+        <div class={styles.eventSkeleton} />
+        <div class={styles.eventSkeleton} />
+      </>
+    ) : (
+      day.events.map((ev, i) => (
+        <div key={i} title={ev.calendarName} {...eventProps(marker, ev.calendarId)}>
+          {marker === 'dot' && (
+            <span class={styles.eventDot} style={{ background: calendarColor(ev.calendarId) }} />
+          )}
+          <div class={styles.eventText}>
+            <span class={styles.eventTime}>{timeLabel(ev, day)}</span>
+            <span class={styles.eventSummary}>{ev.summary}</span>
           </div>
-        ))}
+        </div>
+      ))
+    );
+
+  return (
+    <div class={stacked ? '' : styles.weekScroll}>
+      <div
+        class={stacked ? styles.weekGridV : styles.weekGrid}
+        style={stacked ? undefined : { gridTemplateColumns: `repeat(${days}, minmax(158px, 1fr))` }}
+      >
+        {board.map((day) => {
+          const t = day.start.getTime();
+          const collapse = collapsible && !day.isToday;
+          const open = !collapse || expanded.has(t);
+          return (
+            <div key={t} class={`${styles.day}${day.isToday ? ` ${styles.today}` : ''}`}>
+              <header
+                class={`${styles.dayHeader}${collapse ? ` ${styles.dayHeaderTap}` : ''}`}
+                onClick={collapse ? () => toggle(t) : undefined}
+              >
+                <span class={styles.dayName}>{day.weekday}</span>
+                <span class={styles.dayDate}>
+                  {collapse && !open && day.events.length > 0 ? `${day.events.length} · ` : ''}
+                  {day.dateLabel}
+                  {collapse ? (open ? ' ▾' : ' ▸') : ''}
+                </span>
+              </header>
+              {open && <div class={styles.dayEvents}>{dayEvents(day)}</div>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
