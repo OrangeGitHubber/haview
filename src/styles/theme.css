@@ -23,6 +23,11 @@
   /* page-builder grid cell */
   --grid-row: 56px;
   --grid-gap: 12px;
+
+  /* card surfaces honor the global card-opacity setting (--card-alpha is
+     written to <html> at runtime); nav, modals and settings stay opaque */
+  --surface-card: color-mix(in srgb, var(--surface) var(--card-alpha, 100%), transparent);
+  --surface-2-card: color-mix(in srgb, var(--surface-2) var(--card-alpha, 100%), transparent);
 }
 
 /*

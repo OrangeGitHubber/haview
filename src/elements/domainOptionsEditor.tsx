@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import { Modal } from '../components/Modal';
 import { updateElementOptions, removeElement } from '../lib/settings';
 import { useEntitiesByDomain } from '../lib/ha/entities';
@@ -14,9 +15,17 @@ export interface EditorProps {
 /** Options editor for elements that just pick one entity of a fixed domain. */
 export function makeDomainOptionsEditor(domain: string, label: string) {
   return function DomainOptionsEditor({ pageId, element, onClose }: EditorProps) {
-    const entities = useEntitiesByDomain(domain).value;
+    const all = useEntitiesByDomain(domain).value;
+    const [query, setQuery] = useState('');
     const rawId = element.options?.entityId;
     const current = typeof rawId === 'string' ? rawId : '';
+    const q = query.trim().toLowerCase();
+    const entities = q
+      ? all.filter(
+          (e) =>
+            friendlyName(e).toLowerCase().includes(q) || e.entity_id.toLowerCase().includes(q),
+        )
+      : all;
 
     return (
       <Modal onClose={onClose} maxWidth={420}>
@@ -27,7 +36,18 @@ export function makeDomainOptionsEditor(domain: string, label: string) {
           </button>
         </header>
         <div class={opt.form}>
-          {entities.length === 0 && <p class={opt.dim}>No {domain} entities found.</p>}
+          {all.length > 5 && (
+            <label class={opt.row}>
+              <input
+                type="search"
+                placeholder="Search by name…"
+                value={query}
+                onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
+              />
+            </label>
+          )}
+          {all.length === 0 && <p class={opt.dim}>No {domain} entities found.</p>}
+          {all.length > 0 && entities.length === 0 && <p class={opt.dim}>Nothing matches.</p>}
           <ul class={opt.checklist}>
             {entities.map((e) => (
               <li key={e.entity_id}>

@@ -6,7 +6,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 4px;
-  background: var(--surface);
+  background: var(--surface-card, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 14px;

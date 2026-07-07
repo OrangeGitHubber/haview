@@ -48,6 +48,12 @@
   outline-offset: -1px;
 }
 
+.field input[type='range'] {
+  padding: 0;
+  border: none;
+  accent-color: var(--accent);
+}
+
 .fieldRow {
   display: flex;
   gap: 10px;

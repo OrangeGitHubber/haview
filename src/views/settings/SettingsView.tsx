@@ -71,6 +71,18 @@ export default function SettingsView() {
             </button>
           ))}
         </div>
+        <label class={styles.field}>
+          Card opacity · {s.cardOpacity}%
+          <input
+            type="range"
+            min={30}
+            max={100}
+            value={s.cardOpacity}
+            onInput={(e) =>
+              updateSettings({ cardOpacity: Number((e.target as HTMLInputElement).value) })
+            }
+          />
+        </label>
         <label class={styles.checkItem}>
           <input
             type="checkbox"

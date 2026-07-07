@@ -35,6 +35,8 @@ export interface AppSettings {
   theme: string;
   /** light/dark handling: follow the OS or force one */
   colorMode: 'auto' | 'dark' | 'light';
+  /** card/container background opacity in percent (30–100) */
+  cardOpacity: number;
   /** dim the display during the configured window */
   nightDim: boolean;
   /** window start/end, 'HH:MM' (may wrap past midnight) */
@@ -91,6 +93,7 @@ function defaults(): AppSettings {
     pages: [defaultMainPage(), defaultCamerasPage()],
     theme: 'orange',
     colorMode: 'auto',
+    cardOpacity: 100,
     nightDim: false,
     nightDimStart: '22:00',
     nightDimEnd: '07:00',
@@ -218,6 +221,10 @@ function normalize(raw: unknown): AppSettings {
     pages: normalizePages(r.pages),
     theme: typeof r.theme === 'string' && r.theme ? r.theme : base.theme,
     colorMode: r.colorMode === 'light' || r.colorMode === 'dark' ? r.colorMode : 'auto',
+    cardOpacity:
+      typeof r.cardOpacity === 'number' && Number.isFinite(r.cardOpacity)
+        ? Math.min(Math.max(Math.round(r.cardOpacity), 30), 100)
+        : base.cardOpacity,
     nightDim: r.nightDim === true,
     nightDimStart: isTimeString(r.nightDimStart) ? r.nightDimStart : base.nightDimStart,
     nightDimEnd: isTimeString(r.nightDimEnd) ? r.nightDimEnd : base.nightDimEnd,
@@ -423,4 +430,5 @@ settings.subscribe((s) => {
 settings.subscribe((s) => {
   applyTheme(s.theme);
   applyColorMode(s.colorMode);
+  document.documentElement.style.setProperty('--card-alpha', `${s.cardOpacity}%`);
 });
