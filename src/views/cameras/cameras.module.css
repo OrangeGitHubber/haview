@@ -4,6 +4,57 @@
   gap: 14px;
 }
 
+/* ---------- camera container element (many cameras in one card) ---------- */
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface-card, var(--surface));
+  border: 1px solid var(--border-card, var(--border));
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card, var(--shadow-sm));
+  overflow: hidden;
+}
+
+.containerTitle {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text-dim);
+}
+
+.camGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  align-content: start;
+  /* x hidden, y auto (avoids the single-axis overflow quirk) */
+  overflow: hidden auto;
+}
+
+.camHint {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.camUnavail {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+  padding: 8px;
+  text-align: center;
+}
+
 .tile {
   position: relative;
   aspect-ratio: 16 / 9;

@@ -50,11 +50,11 @@ export const elementDefs: Record<string, ElementDef> = {
   },
   camera: {
     type: 'camera',
-    title: 'Camera',
+    title: 'Cameras',
     load: () => import('../elements/CameraCard'),
     optionsLoader: () => import('../elements/CameraOptionsEditor'),
-    defaultSize: { w: 8, h: 6 },
-    minSize: { w: 2, h: 2 },
+    defaultSize: { w: 10, h: 8 },
+    minSize: { w: 3, h: 3 },
   },
   clock: {
     type: 'clock',
