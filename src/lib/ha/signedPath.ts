@@ -1,5 +1,5 @@
 import { getConnection } from './connection';
-import { loadConfig } from '../config';
+import { haBase } from '../config';
 
 interface CacheEntry {
   url: string;
@@ -25,9 +25,8 @@ export async function getSignedUrl(path: string, expiresSec = 300): Promise<stri
     path,
     expires: expiresSec,
   });
-  const cfg = loadConfig();
-  if (!cfg) throw new Error('Home Assistant is not configured');
-  const url = cfg.hassUrl + result.path;
+  // the signed path is served through the reverse proxy (same origin)
+  const url = haBase() + result.path;
   cache.set(path, { url, expiresAt: Date.now() + expiresSec * 1000 });
   return url;
 }

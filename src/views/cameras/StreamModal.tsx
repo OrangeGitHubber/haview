@@ -3,7 +3,7 @@ import { createPortal } from 'preact/compat';
 import type { HassEntity } from 'home-assistant-js-websocket';
 import type HlsType from 'hls.js';
 import { getConnection } from '../../lib/ha/connection';
-import { loadConfig } from '../../lib/config';
+import { haBase } from '../../lib/config';
 import { Spinner } from '../../components/Spinner';
 import { useSnapshot } from './useSnapshot';
 import styles from './cameras.module.css';
@@ -201,9 +201,7 @@ export function StreamModal({ entity, onClose }: { entity: HassEntity; onClose: 
           type: 'camera/stream',
           entity_id: entity.entity_id,
         });
-        const cfg = loadConfig();
-        if (!cfg) throw new Error('not configured');
-        const streamUrl = cfg.hassUrl + url;
+        const streamUrl = haBase() + url; // HLS served through the reverse proxy
         if (cancelled) return;
 
         if (video.canPlayType('application/vnd.apple.mpegurl')) {

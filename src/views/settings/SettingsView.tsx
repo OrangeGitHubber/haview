@@ -1,13 +1,13 @@
 import { settings, updateSettings, setTheme } from '../../lib/settings';
 import { themes } from '../../lib/themes';
-import { loadConfig, setupRequested } from '../../lib/config';
+import { serverConfig, setupRequested } from '../../lib/config';
 import { PagesEditor } from './PagesEditor';
 import { ExportImport } from './ExportImport';
 import styles from './settings.module.css';
 
 export default function SettingsView() {
   const s = settings.value;
-  const cfg = loadConfig();
+  const cfg = serverConfig.value;
 
   return (
     <div class={styles.page}>

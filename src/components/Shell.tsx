@@ -1,6 +1,6 @@
 import { settings } from '../lib/settings';
 import { currentRoute } from '../lib/router';
-import { loadConfig } from '../lib/config';
+import { haBase } from '../lib/config';
 import { minuteTick } from '../lib/clock';
 import { useIdle } from '../lib/useIdle';
 import { settingsLoader } from '../views/registry';
@@ -12,10 +12,8 @@ const gridPageLoader = () => import('../grid/GridPage');
 
 function backgroundUrl(raw: string | undefined): string | null {
   if (!raw) return null;
-  if (raw.startsWith('/')) {
-    const cfg = loadConfig();
-    return cfg ? cfg.hassUrl + raw : null;
-  }
+  // HA-served paths (/local/…) go through the reverse proxy
+  if (raw.startsWith('/')) return haBase() + raw;
   return raw;
 }
 

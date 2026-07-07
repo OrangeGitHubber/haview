@@ -3,7 +3,7 @@ import type { HassEntity } from '../lib/types';
 import { useEntity } from '../lib/ha/entities';
 import { callSvc } from '../lib/ha/service';
 import { getSignedUrl } from '../lib/ha/signedPath';
-import { loadConfig } from '../lib/config';
+import { haBase } from '../lib/config';
 import type { ElementProps } from '../grid/elements';
 import styles from './elements.module.css';
 
@@ -23,15 +23,14 @@ function useArtwork(entity: HassEntity | undefined): string | null {
     let alive = true;
     setUrl(null);
     if (!picture) return;
-    const cfg = loadConfig();
-    if (picture.includes('token=') && picture.startsWith('/') && cfg) {
-      setUrl(cfg.hassUrl + picture);
+    if (picture.includes('token=') && picture.startsWith('/')) {
+      setUrl(haBase() + picture);
     } else if (picture.startsWith('/api/')) {
       getSignedUrl(picture, 300)
         .then((u) => alive && setUrl(u))
         .catch(() => {});
-    } else if (picture.startsWith('/') && cfg) {
-      setUrl(cfg.hassUrl + picture);
+    } else if (picture.startsWith('/')) {
+      setUrl(haBase() + picture);
     } else {
       setUrl(picture);
     }

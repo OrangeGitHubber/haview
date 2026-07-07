@@ -1,7 +1,7 @@
-import { loadConfig } from '../config';
+import { haBase } from '../config';
 
 export class HaRestError extends Error {
-  /** status 0 means the fetch itself failed — usually a CORS or network problem */
+  /** status 0 means the fetch itself failed — a network/proxy problem */
   constructor(
     public status: number,
     message: string,
@@ -15,25 +15,20 @@ export class HaRestError extends Error {
   }
 }
 
+// requests go same-origin through the container's HA reverse proxy, which
+// injects the bearer token — no Authorization header or CORS needed here
 export async function haFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const cfg = loadConfig();
-  if (!cfg) throw new HaRestError(0, 'Home Assistant is not configured');
-
   let res: Response;
   try {
-    res = await fetch(cfg.hassUrl + path, {
+    res = await fetch(haBase() + path, {
       ...init,
       headers: {
-        Authorization: `Bearer ${cfg.token}`,
         'Content-Type': 'application/json',
         ...init?.headers,
       },
     });
   } catch {
-    throw new HaRestError(
-      0,
-      'Could not reach the Home Assistant REST API (network error or missing cors_allowed_origins)',
-    );
+    throw new HaRestError(0, 'Could not reach Home Assistant through the dashboard server.');
   }
   if (!res.ok) {
     throw new HaRestError(res.status, `Home Assistant API returned ${res.status} for ${path}`);

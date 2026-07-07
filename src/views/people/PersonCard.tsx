@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { HassEntity } from 'home-assistant-js-websocket';
 import { getSignedUrl } from '../../lib/ha/signedPath';
-import { loadConfig } from '../../lib/config';
+import { haBase } from '../../lib/config';
 import { useEntity } from '../../lib/ha/entities';
 import { PersonMapModal } from './PersonMapModal';
 import styles from './people.module.css';
@@ -26,8 +26,7 @@ function usePersonAvatar(entity: HassEntity): string | null {
         .then((u) => alive && setUrl(u))
         .catch(() => {});
     } else if (picture.startsWith('/')) {
-      const cfg = loadConfig();
-      if (cfg) setUrl(cfg.hassUrl + picture);
+      setUrl(haBase() + picture);
     } else {
       setUrl(picture);
     }

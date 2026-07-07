@@ -5,7 +5,7 @@ import {
   type Connection,
 } from 'home-assistant-js-websocket';
 import { signal } from '@preact/signals';
-import { loadConfig } from '../config';
+import { haBase, serverConfig } from '../config';
 
 export type ConnectionStatus =
   | 'unconfigured'
@@ -14,9 +14,7 @@ export type ConnectionStatus =
   | 'reconnecting'
   | 'auth-failed';
 
-export const connectionStatus = signal<ConnectionStatus>(
-  loadConfig() ? 'connecting' : 'unconfigured',
-);
+export const connectionStatus = signal<ConnectionStatus>('connecting');
 export const disconnectedSince = signal<number | null>(null);
 
 let connPromise: Promise<Connection> | null = null;
@@ -35,12 +33,13 @@ export function getConnection(): Promise<Connection> {
 }
 
 async function connect(): Promise<Connection> {
-  const cfg = loadConfig();
-  if (!cfg) {
+  if (!serverConfig.peek().configured) {
     connectionStatus.value = 'unconfigured';
     throw new Error('Home Assistant is not configured');
   }
-  const auth = createLongLivedTokenAuth(cfg.hassUrl, cfg.token);
+  // the container reverse-proxies HA and injects the real token; the browser
+  // connects same-origin with a dummy token that the proxy ignores
+  const auth = createLongLivedTokenAuth(haBase(), 'proxy');
   connectionStatus.value = 'connecting';
 
   // createConnection only auto-retries once it has connected at least once;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { getSignedUrl } from '../../lib/ha/signedPath';
 import { connectionStatus } from '../../lib/ha/connection';
-import { loadConfig } from '../../lib/config';
+import { haBase } from '../../lib/config';
 
 const REFRESH_MS = 10_000;
 const STALE_AFTER_MISSES = 3;
@@ -36,10 +36,10 @@ export function useSnapshot(entityId: string, staggerMs: number, picture?: strin
       try {
         // Prefer the camera's entity_picture (carries its own access token —
         // the same URL HA's UI uses); fall back to a signed camera_proxy path.
+        // Both are fetched through the reverse proxy (same origin).
         let base: string;
-        const cfg = loadConfig();
-        if (picture && picture.includes('token=') && picture.startsWith('/') && cfg) {
-          base = cfg.hassUrl + picture;
+        if (picture && picture.includes('token=') && picture.startsWith('/')) {
+          base = haBase() + picture;
         } else {
           base = await getSignedUrl(`/api/camera_proxy/${entityId}`, 300);
         }

@@ -1,11 +1,5 @@
 import { useState } from 'preact/hooks';
-import {
-  createConnection,
-  createLongLivedTokenAuth,
-  ERR_INVALID_AUTH,
-  ERR_INVALID_HTTPS_TO_HTTP,
-} from 'home-assistant-js-websocket';
-import { loadConfig, normalizeHassUrl, saveConfig } from '../lib/config';
+import { serverConfig, saveConnection } from '../lib/config';
 
 export function SetupScreen({
   authFailed,
@@ -14,8 +8,7 @@ export function SetupScreen({
   authFailed?: boolean;
   onCancel?: () => void;
 }) {
-  const existing = loadConfig();
-  const [url, setUrl] = useState(existing?.hassUrl ?? '');
+  const [url, setUrl] = useState(serverConfig.value.hassUrl ?? '');
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(
@@ -24,52 +17,23 @@ export function SetupScreen({
       : null,
   );
 
-  async function testAndSave(e: Event) {
+  async function submit(e: Event) {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const hassUrl = normalizeHassUrl(url);
-    const trimmedToken = token.trim();
-
-    // 1. WebSocket + auth check
-    try {
-      const auth = createLongLivedTokenAuth(hassUrl, trimmedToken);
-      const conn = await createConnection({ auth, setupRetry: 0 });
-      conn.close();
-    } catch (err) {
-      if (err === ERR_INVALID_AUTH) {
-        setError('Home Assistant rejected the access token. Create a fresh long-lived token in your HA profile (Security tab) and paste it exactly.');
-      } else if (err === ERR_INVALID_HTTPS_TO_HTTP) {
-        setError('This page is served over https, so the browser blocks a plain http connection to Home Assistant. Use your https HA URL (remote/proxy address).');
-      } else {
-        setError(`Could not open a WebSocket to ${hassUrl}. Check the URL (including http/https and port, e.g. http://192.168.1.10:8123) and that HA is reachable from this device.`);
-      }
+    // the dashboard container validates against HA and stores the token
+    const result = await saveConnection(url, token);
+    if (!result.ok) {
+      setError(result.error);
       setBusy(false);
       return;
     }
-
-    // 2. REST/CORS check — the most common real-world failure when the
-    // dashboard is served from its own origin.
-    try {
-      const res = await fetch(`${hassUrl}/api/`, {
-        headers: { Authorization: `Bearer ${trimmedToken}` },
-      });
-      if (!res.ok) throw new Error(String(res.status));
-    } catch {
-      setError(
-        `WebSocket connected, but the REST API is blocked — almost certainly CORS. Add this origin to configuration.yaml under http: → cors_allowed_origins: "${location.origin}", restart Home Assistant, then try again.`,
-      );
-      setBusy(false);
-      return;
-    }
-
-    saveConfig({ hassUrl, token: trimmedToken });
     location.reload();
   }
 
   return (
     <div class="setup">
-      <form class="setup-card" onSubmit={testAndSave}>
+      <form class="setup-card" onSubmit={submit}>
         <h1>
           <svg viewBox="0 0 32 32" aria-hidden="true">
             <path d="M16 6 L27 15 H24 V25 H19 V18 H13 V25 H8 V15 H5 Z" fill="var(--accent)" />
@@ -77,8 +41,8 @@ export function SetupScreen({
           Oranjehuis
         </h1>
         <p class="setup-hint">
-          Connect this device to your Home Assistant instance. The settings are stored only in this
-          browser.
+          Connect the dashboard to your Home Assistant. This is stored once in the container and
+          shared by every screen — the token stays on the server and is never sent to browsers.
         </p>
         <label>
           Home Assistant URL
@@ -113,8 +77,8 @@ export function SetupScreen({
         )}
         <p class="setup-hint">
           Create a token in HA: <strong>Profile → Security → Long-lived access tokens</strong>. The
-          REST API also needs this origin in <code>cors_allowed_origins</code> — see{' '}
-          <code>docs/ha-setup.md</code>.
+          dashboard container must be able to reach the HA URL (it connects on your behalf, so no
+          browser CORS setup is needed).
         </p>
       </form>
     </div>
