@@ -183,8 +183,10 @@
   display: flex;
   flex-wrap: nowrap;
   gap: 8px;
-  /* center the cards vertically within the bar */
+  /* center cards both ways; `safe` keeps the start reachable when they
+     overflow and the row scrolls */
   align-items: center;
+  justify-content: safe center;
   /* more cards than fit → scroll horizontally */
   overflow-x: auto;
   overflow-y: hidden;

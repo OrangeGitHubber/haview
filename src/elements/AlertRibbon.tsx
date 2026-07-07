@@ -109,10 +109,11 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
     options: { entityId },
   });
 
-  // when nothing is triggered, the ribbon is silent in normal use; the
-  // title + placeholder only appear in page edit mode so it stays findable
+  // when nothing is triggered, the ribbon is fully invisible in normal use
+  // (no card at all); the title + placeholder only appear in page edit mode
+  // so it stays findable
   if (active.length === 0) {
-    if (!editing) return <div class={`${styles.card} ${styles.alertRibbon}`} />;
+    if (!editing) return null;
     return (
       <div class={`${styles.card} ${styles.alertRibbon}`}>
         <div class={styles.graphHead}>
