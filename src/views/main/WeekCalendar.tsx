@@ -33,6 +33,9 @@ export interface CalendarOptions {
   showDots?: boolean;
   /** per-entry calendar-color marker: hidden, a dot, or a left bar */
   marker?: 'hide' | 'dot' | 'bar';
+  /** agenda mode: draw a surrounding card surface (uses card opacity).
+      Off by default so the entries use the full space. */
+  agendaCard?: boolean;
 }
 
 export type EntryMarker = 'hide' | 'dot' | 'bar';
@@ -57,6 +60,7 @@ export function calendarOptionsOf(element: ElementProps['element']): Required<Ca
     showDots: o.showDots !== false,
     // marker wins; else derive from the legacy showDots flag
     marker: (o.marker ?? (o.showDots === false ? 'hide' : 'dot')) as EntryMarker,
+    agendaCard: o.agendaCard === true,
   };
 }
 
@@ -142,7 +146,9 @@ export function WeekCalendar({ element }: ElementProps) {
 
   return (
     <section
-      class={`${styles.week}${opt.mode === 'agenda' ? ` ${styles.weekAgendaCard}` : ''}`}
+      class={`${styles.week}${
+        opt.mode === 'agenda' && opt.agendaCard ? ` ${styles.weekAgendaCard}` : ''
+      }`}
     >
       <header class={styles.weekHeader}>
         <h2 class={`${styles.weekTitle} card-title`}>

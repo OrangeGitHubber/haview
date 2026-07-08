@@ -150,19 +150,42 @@ export default function CalendarOptionsEditor({
         )}
 
         {mode === 'agenda' && (
-          <label class={opt.row}>
-            Entries
-            <input
-              class={opt.num}
-              type="number"
-              min={1}
-              max={20}
-              value={o.count ?? 5}
-              onChange={(e) =>
-                set({ count: num((e.target as HTMLInputElement).value, 1, 20, 5) })
-              }
-            />
-          </label>
+          <>
+            <label class={opt.row}>
+              Entries
+              <input
+                class={opt.num}
+                type="number"
+                min={1}
+                max={20}
+                value={o.count ?? 5}
+                onChange={(e) =>
+                  set({ count: num((e.target as HTMLInputElement).value, 1, 20, 5) })
+                }
+              />
+            </label>
+            <div class={opt.row}>
+              Card background
+              <div class={opt.seg}>
+                <button
+                  class={`${opt.segBtn}${!o.agendaCard ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaCard: false })}
+                >
+                  None
+                </button>
+                <button
+                  class={`${opt.segBtn}${o.agendaCard ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaCard: true })}
+                >
+                  Surface
+                </button>
+              </div>
+              <span class={opt.dim}>
+                “Surface” draws a bordered card that follows the card-opacity setting; “None” lets
+                entries use the full space.
+              </span>
+            </div>
+          </>
         )}
 
         <div class={opt.row}>
