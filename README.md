@@ -65,6 +65,12 @@ First load shows a setup screen — enter the HA URL + token once. Updating = pu
 then re-pull the image on unraid. If the repo/package is private, add a registry login on
 unraid (`docker login ghcr.io` with a `read:packages` token).
 
+**Once this is reachable from the public internet, it requires Google sign-in** —
+restricted to an explicit allow-list of Google account emails you configure. See
+[docs/google-auth-setup.md](docs/google-auth-setup.md) for the five env vars this needs;
+without them the server fails closed (shows a "not configured" page) rather than running
+open.
+
 Or build from source on any Docker host:
 
 ```bash

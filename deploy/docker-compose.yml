@@ -4,7 +4,12 @@
 #
 # The HA URL + token and all config profiles are stored in the /data volume
 # (map it to an appdata path). They are entered ONCE from any browser via the
-# setup screen — no per-device configuration and no env vars needed.
+# setup screen — no per-device HA configuration.
+#
+# The whole app is gated behind Google sign-in (see docs/google-auth-setup.md).
+# The five env vars below are REQUIRED once this is reachable from the public
+# internet — without them the server fails closed and serves a
+# "not configured" page instead of the dashboard.
 services:
   haview:
     image: haview:latest
@@ -16,4 +21,16 @@ services:
       - '8090:80'
     volumes:
       - /mnt/user/appdata/haview:/data
+    environment:
+      # OAuth client from Google Cloud Console (type "Web application")
+      - GOOGLE_CLIENT_ID=changeme.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=changeme
+      # comma-separated allow-list; only these Google accounts can sign in
+      - ALLOWED_GOOGLE_EMAILS=you@example.com
+      # public base URL this container is reachable at (no trailing slash);
+      # used to build the OAuth redirect_uri — must match the Google Cloud
+      # Console "Authorized redirect URIs" entry exactly
+      - PUBLIC_URL=https://oranjehuis.example.com
+      # optional: auto-generated and persisted to /data on first boot if unset
+      # - SESSION_SECRET=
     restart: unless-stopped

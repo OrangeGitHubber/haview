@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Serves the built dashboard, reverse-proxies Home Assistant, and stores config profiles.",
   "dependencies": {
+    "google-auth-library": "^10.0.0",
     "ws": "^8.18.0"
   }
 }

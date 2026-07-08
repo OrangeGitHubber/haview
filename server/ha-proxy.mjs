@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import { WebSocketServer, WebSocket } from 'ws';
 import { getConnection } from './config-store.mjs';
+import { isAuthed } from './auth.mjs';
 
 const HOP_BY_HOP = new Set([
   'connection',
@@ -89,9 +90,17 @@ export function attachWsProxy(server) {
       socket.destroy();
       return;
     }
-    wss.handleUpgrade(req, socket, head, (browserWs) => {
-      bridge(browserWs).catch(() => browserWs.close());
-    });
+    isAuthed(req)
+      .then((authed) => {
+        if (!authed) {
+          socket.destroy();
+          return;
+        }
+        wss.handleUpgrade(req, socket, head, (browserWs) => {
+          bridge(browserWs).catch(() => browserWs.close());
+        });
+      })
+      .catch(() => socket.destroy());
   });
 }
 
