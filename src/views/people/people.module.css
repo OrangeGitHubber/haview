@@ -20,12 +20,12 @@
   gap: 10px;
   height: 100%;
   min-height: 0;
-  /* Each card is its own query container: one cqi-based font-size (times the
-     optional --ui-scale slider) anchors the whole card, and children size in
-     em off it. So text scales with the card's rendered width on any
-     resolution/DPI, and the slider still multiplies everything. */
+  /* Query container for the size anchor below (.card > *). A cqi unit can't
+     measure the element that declares container-type itself — it silently
+     resolves against the next ancestor container instead (the whole widget,
+     which is wider than one card whenever several share a row) — so the
+     anchor has to live on the children, not here. */
   container-type: inline-size;
-  font-size: clamp(0.9rem, calc(6.6cqi * var(--ui-scale, 1)), 1.85rem);
   background: var(--surface-card, var(--surface));
   border: 1px solid var(--border-card, var(--border));
   border-radius: var(--radius);
@@ -39,6 +39,13 @@
 
 .card:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+/* the size anchor: one cqi-based font-size (times the optional --ui-scale
+   slider) off the card's own rendered width, applied to both direct
+   children so everything below sizes in em from it */
+.card > * {
+  font-size: clamp(0.9rem, calc(6.6cqi * var(--ui-scale, 1)), 1.85rem);
 }
 
 .cardMain {

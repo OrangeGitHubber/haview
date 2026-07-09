@@ -124,6 +124,9 @@
    avoid oversized text (phones and vertical-layout desktops) */
 .weekGridV .day {
   min-height: 0;
+}
+
+.weekGridV .day > * {
   font-size: clamp(0.8rem, calc(3.6cqi * var(--ui-scale, 1)), 1.7rem);
 }
 
@@ -144,14 +147,19 @@
   display: grid;
   gap: 6px;
   align-content: space-between;
-  /* agenda list anchors its text to the widget width (times --ui-scale) */
+  /* query container for the size anchor below (.agenda > *) */
   container-type: inline-size;
+}
+
+/* the size anchor: cqi off the agenda list's own rendered width (times the
+   optional --ui-scale slider), applied to every direct child (entries, the
+   empty-state message) so everything below sizes in em from it */
+.agenda > * {
   font-size: clamp(0.8rem, calc(4.9cqi * var(--ui-scale, 1)), 1.7rem);
 }
 
 .agendaEmpty {
   color: var(--text-dim);
-  font-size: 1em;
   padding: 8px 0;
 }
 
@@ -163,10 +171,19 @@
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  /* each day column anchors its own text to its width (times the optional
-     --ui-scale slider); children size in em. Floors at 0.8rem so it never
-     gets unreadable, grows on wider/high-res displays. */
+  /* query container for the size anchor below (.day > *). A cqi unit can't
+     measure the element that declares container-type itself — it silently
+     resolves against the next ancestor container instead, which in the
+     7-column week grid is the whole widget (several times wider than one
+     day column) — so the anchor has to live on the children, not here. */
   container-type: inline-size;
+}
+
+/* the size anchor: cqi off this day column's own rendered width (times the
+   optional --ui-scale slider), applied to every direct child (header,
+   events list) so everything below sizes in em from it. Floors at 0.8rem so
+   it never gets unreadable, grows on wider/high-res displays. */
+.day > * {
   font-size: clamp(0.8rem, calc(9cqi * var(--ui-scale, 1)), 1.7rem);
 }
 
