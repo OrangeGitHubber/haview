@@ -55,16 +55,21 @@ export function IdleDebugOverlay({ nightActive }: { nightActive: boolean }) {
     <div
       style={{
         position: 'fixed',
-        top: 8,
-        left: 8,
+        // bottom-centre: clear of the left nav and the bottom-right edit FAB,
+        // so it never covers anything you need to click
+        bottom: 8,
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 200, // above the screensaver (101) so it stays readable
-        maxWidth: '92vw',
+        maxWidth: 'min(520px, 92vw)',
         padding: '8px 10px',
         background: 'rgba(0,0,0,0.82)',
         color: '#e6ffe6',
         font: '12px/1.45 ui-monospace, Menlo, Consolas, monospace',
         border: '1px solid #2c8',
         borderRadius: 8,
+        // belt-and-braces: transparent to clicks so navigation underneath is
+        // always reachable even if it does overlap something
         pointerEvents: 'none',
         whiteSpace: 'pre',
       }}
