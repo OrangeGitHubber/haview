@@ -152,11 +152,32 @@ export default function GridPage({
 
   const cellW = width > 0 ? (width - GAP * (GRID_COLS - 1)) / GRID_COLS : 0;
 
+  const contentRows = elements.reduce((m, e) => Math.max(m, e.y + e.h), 0);
+
+  // "Fit to screen height": scale the row height so the layout fills the
+  // viewport top-to-bottom on any display. This now applies while EDITING too
+  // — it used to fall back to fixed 28px rows in edit mode, which collapsed a
+  // wall-display page into the top corner and made it painful to edit. Now you
+  // edit at the same scale you view.
+  const fit = !!page.fitHeight;
+
+  // Rows the layout is scaled around. Excludes the live drag extent so rowH
+  // (hence every widget's on-screen size) stays STABLE while dragging instead
+  // of rescaling under the cursor. The +3 edit headroom is only added for
+  // non-fit pages (which scroll anyway); a fit page fills the viewport exactly
+  // and rescales to keep everything in view as content is added.
+  const baseRows = Math.max(contentRows, editing && !fit ? contentRows + 3 : 0, 3);
+  const rowH =
+    fit && availH > 0 ? Math.max((availH - GAP * (baseRows - 1)) / baseRows, 10) : ROW;
+
   const snapOf = (d: DragState): GridRect => {
     const type = elements.find((e) => e.id === d.id)?.type ?? '';
     const min = elementDefs[type]?.minSize ?? { w: 1, h: 1 };
     const dc = cellW > 0 ? Math.round(d.dx / (cellW + GAP)) : 0;
-    const dr = Math.round(d.dy / (ROW + GAP));
+    // divide by the ACTUAL row pitch so a drag tracks the pointer at whatever
+    // scale fit has chosen (rowH === ROW when fit is off, so non-fit pages are
+    // unchanged)
+    const dr = Math.round(d.dy / (rowH + GAP));
     if (d.mode === 'move') {
       return {
         w: d.start.w,
@@ -176,19 +197,9 @@ export default function GridPage({
   const dragSnap = drag ? snapOf(drag) : null;
   const dragValid = drag !== null && dragSnap !== null && !collides(dragSnap, elements, drag.id);
 
-  const contentRows = elements.reduce((m, e) => Math.max(m, e.y + e.h), 0);
-  const rows = Math.max(
-    contentRows,
-    dragSnap ? dragSnap.y + dragSnap.h : 0,
-    editing ? contentRows + 3 : 0,
-    3,
-  );
-
-  // "Fit to screen height": when viewing (not editing) a page with fitHeight,
-  // scale the row height so the layout fills the viewport top-to-bottom on any
-  // display. Otherwise rows are a fixed height and the page scrolls if tall.
-  const fit = !!page.fitHeight && !editing;
-  const rowH = fit && availH > 0 ? Math.max((availH - GAP * (rows - 1)) / rows, 10) : ROW;
+  // container may still grow past the fitted area if a widget is dragged below
+  // it (the page scrolls while editing); rowH above stays fixed regardless
+  const rows = Math.max(baseRows, dragSnap ? dragSnap.y + dragSnap.h : 0);
 
   const pxRect = (r: GridRect) => ({
     left: `${r.x * (cellW + GAP)}px`,
