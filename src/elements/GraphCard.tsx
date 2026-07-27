@@ -5,6 +5,7 @@ import { useHistory, type HistoryPoint } from './useHistory';
 import { friendlyName } from './EntityCard';
 import { MdiIcon } from '../components/MdiIcon';
 import { domainIconNames } from '../lib/entityIcons';
+import { fontScaleOf } from '../lib/fontSizePresets';
 import type { ElementProps } from '../grid/elements';
 import styles from './elements.module.css';
 
@@ -17,6 +18,8 @@ export interface GraphOptions {
   layout?: 'graph' | 'tile';
   /** mdi icon name for tile mode; falls back to the entity's icon */
   icon?: string;
+  /** text-size multiplier (percent, 50–200; 100 = default) */
+  fontScale?: number;
 }
 
 // viewBox units; stretched to the card (line width stays fixed via
@@ -36,10 +39,11 @@ export default function GraphCard({ element }: ElementProps) {
   const { points, loading, error } = useHistory(entityId, hours);
   const [hover, setHover] = useState<HistoryPoint | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const cardScale = { '--card-scale': String(fontScaleOf(o.fontScale)) } as Record<string, string>;
 
   if (!entityId) {
     return (
-      <div class={`${styles.card} ${styles.cardDead}`}>
+      <div class={`${styles.card} ${styles.cardDead}`} style={cardScale}>
         <span class={styles.state}>No sensor selected</span>
       </div>
     );
@@ -103,7 +107,7 @@ export default function GraphCard({ element }: ElementProps) {
       ...domainIconNames(entityId),
     ];
     return (
-      <div class={`${styles.card} ${styles.tileCard}`}>
+      <div class={`${styles.card} ${styles.tileCard}`} style={cardScale}>
         <MdiIcon names={iconNames} class={styles.tileIcon} />
         <div class={styles.tileBody}>
           <span class={styles.tileLabel}>{title}</span>
@@ -128,7 +132,7 @@ export default function GraphCard({ element }: ElementProps) {
   }
 
   return (
-    <div class={`${styles.card} ${styles.graphCard}`}>
+    <div class={`${styles.card} ${styles.graphCard}`} style={cardScale}>
       <div class={styles.graphHead}>
         <span class={`${styles.name} card-title`}>{title}</span>
         <span class={styles.graphWindow}>{hours >= 24 ? `${Math.round(hours / 24)}d` : `${hours}h`}</span>

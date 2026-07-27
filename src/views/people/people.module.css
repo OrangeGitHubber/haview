@@ -45,7 +45,11 @@
    slider) off the card's own rendered width, applied to both direct
    children so everything below sizes in em from it */
 .card > * {
-  font-size: clamp(0.9rem, calc(6.6cqi * var(--ui-scale, 1)), 1.85rem);
+  font-size: clamp(
+    calc(0.9rem * var(--card-scale, 1)),
+    calc(6.6cqi * var(--ui-scale, 1) * var(--card-scale, 1)),
+    calc(1.85rem * var(--card-scale, 1))
+  );
 }
 
 .cardMain {

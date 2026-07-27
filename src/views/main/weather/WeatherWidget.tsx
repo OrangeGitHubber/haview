@@ -42,11 +42,9 @@ export function weatherBucket(width: number, height: number): WeatherBucket {
 
 /** the largest px value that still fits each bucket's own worst-case
     (smallest) size, verified with a live harness — see weatherBucket()'s
-    thresholds above. User-configurable (element.options.fontSizes) since
-    a specific placement is often much roomier than a bucket's worst case
-    (e.g. a wide-and-tall card still only counts as 'md' because width is
-    the tighter axis) — bumping these defaults directly would just move
-    the clipping problem to whoever's card IS at the worst case. */
+    thresholds above. The user scales these together via the Text size knob
+    (element.options.fontScale); the calibrated defaults stay the 100% base so
+    a widget resized smaller can't clip. */
 export const DEFAULT_WEATHER_FONT_SIZES: Record<WeatherBucket, number> = {
   xs: 12,
   sm: 11,

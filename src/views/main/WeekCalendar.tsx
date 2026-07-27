@@ -31,9 +31,9 @@ export function dayBucket(width: number): DayBucket {
 }
 
 /** verified with a live harness at each bucket's own worst-case width (a
-    159px day column with the longest weekday name, "Wednesday") — user-
-    configurable via element.options.dayFontSizes, same reasoning as
-    weather's DEFAULT_WEATHER_FONT_SIZES. */
+    159px day column with the longest weekday name, "Wednesday") — the user
+    scales these with the Text size knob (element.options.fontScale), same
+    reasoning as weather's DEFAULT_WEATHER_FONT_SIZES. */
 export const DEFAULT_DAY_FONT_SIZES: Record<DayBucket, number> = {
   xs: 15,
   sm: 19,

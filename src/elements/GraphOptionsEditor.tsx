@@ -3,6 +3,8 @@ import { updateElementOptions, removeElement } from '../lib/settings';
 import { EntityPicker } from '../grid/EntityPicker';
 import { MdiIcon } from '../components/MdiIcon';
 import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
+import { TextSizeRow } from './TextSizeRow';
+import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
 import type { GraphOptions } from './GraphCard';
 import opt from '../components/options.module.css';
@@ -35,6 +37,7 @@ const TILE_ICONS = [
 
 export default function GraphOptionsEditor({ pageId, element, onClose }: EditorProps) {
   const o = (element.options ?? {}) as GraphOptions;
+  const fontScale = typeof o.fontScale === 'number' ? o.fontScale : DEFAULT_FONT_SCALE;
   const set = (patch: Partial<GraphOptions>) => updateElementOptions(pageId, element.id, patch);
 
   return (
@@ -119,6 +122,7 @@ export default function GraphOptionsEditor({ pageId, element, onClose }: EditorP
             onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
           />
         </label>
+        <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
         <CardTitleRow pageId={pageId} element={element} />
         <CardOpacityRow pageId={pageId} element={element} />
         <div class={opt.footerRow}>

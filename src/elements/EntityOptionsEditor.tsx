@@ -2,6 +2,8 @@ import { Modal } from '../components/Modal';
 import { updateElementOptions, removeElement } from '../lib/settings';
 import { EntityPicker } from '../grid/EntityPicker';
 import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
+import { TextSizeRow } from './TextSizeRow';
+import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
 import opt from '../components/options.module.css';
 
@@ -9,6 +11,8 @@ import opt from '../components/options.module.css';
 export default function EntityOptionsEditor({ pageId, element, onClose }: EditorProps) {
   const rawId = element.options?.entityId;
   const current = typeof rawId === 'string' ? rawId : '';
+  const fontScale =
+    typeof element.options?.fontScale === 'number' ? element.options.fontScale : DEFAULT_FONT_SCALE;
 
   return (
     <Modal onClose={onClose} maxWidth={520}>
@@ -50,6 +54,10 @@ export default function EntityOptionsEditor({ pageId, element, onClose }: Editor
             ))}
           </div>
         </div>
+        <TextSizeRow
+          scale={fontScale}
+          onChange={(pct) => updateElementOptions(pageId, element.id, { fontScale: pct })}
+        />
         <CardTitleRow pageId={pageId} element={element} />
         <CardOpacityRow pageId={pageId} element={element} />
         <div class={opt.footerRow}>

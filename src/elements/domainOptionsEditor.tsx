@@ -4,6 +4,8 @@ import { updateElementOptions, removeElement } from '../lib/settings';
 import { useEntitiesByDomain } from '../lib/ha/entities';
 import { friendlyName } from '../views/settings/EntitySelect';
 import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
+import { TextSizeRow } from './TextSizeRow';
+import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { GridElement } from '../grid/types';
 import opt from '../components/options.module.css';
 
@@ -20,6 +22,10 @@ export function makeDomainOptionsEditor(domain: string, label: string) {
     const [query, setQuery] = useState('');
     const rawId = element.options?.entityId;
     const current = typeof rawId === 'string' ? rawId : '';
+    const fontScale =
+      typeof element.options?.fontScale === 'number'
+        ? element.options.fontScale
+        : DEFAULT_FONT_SCALE;
     const q = query.trim().toLowerCase();
     const entities = q
       ? all.filter(
@@ -67,6 +73,10 @@ export function makeDomainOptionsEditor(domain: string, label: string) {
               </li>
             ))}
           </ul>
+          <TextSizeRow
+            scale={fontScale}
+            onChange={(pct) => updateElementOptions(pageId, element.id, { fontScale: pct })}
+          />
           <CardTitleRow pageId={pageId} element={element} />
           <CardOpacityRow pageId={pageId} element={element} />
           <div class={opt.footerRow}>

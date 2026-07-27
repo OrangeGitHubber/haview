@@ -75,7 +75,12 @@ export default function PresenceWidget({ element }: ElementProps) {
   const countPx = Math.round(DEFAULT_PRESENCE_COUNT_FONT_SIZES[bucket] * scale);
 
   return (
-    <div class={styles.card} ref={ref} data-bucket={bucket}>
+    <div
+      class={styles.card}
+      ref={ref}
+      data-bucket={bucket}
+      style={{ '--card-scale': String(scale) } as Record<string, string>}
+    >
       <h2
         class={`${styles.title} card-title`}
         style={{ fontSize: `calc(${titlePx}px * var(--ui-scale, 1))` }}

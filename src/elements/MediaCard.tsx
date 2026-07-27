@@ -4,6 +4,7 @@ import { useEntity } from '../lib/ha/entities';
 import { callSvc } from '../lib/ha/service';
 import { getSignedUrl } from '../lib/ha/signedPath';
 import { haBase } from '../lib/config';
+import { fontScaleOf } from '../lib/fontSizePresets';
 import type { ElementProps } from '../grid/elements';
 import styles from './elements.module.css';
 
@@ -47,10 +48,13 @@ export default function MediaCard({ element }: ElementProps) {
   const entityId = typeof rawId === 'string' ? rawId : '';
   const entity = useEntity(entityId).value;
   const art = useArtwork(entity);
+  const cardScale = {
+    '--card-scale': String(fontScaleOf(element.options?.fontScale)),
+  } as Record<string, string>;
 
   if (!entityId || !entity) {
     return (
-      <div class={`${styles.card} ${styles.cardDead}`}>
+      <div class={`${styles.card} ${styles.cardDead}`} style={cardScale}>
         <span class={styles.state}>{entityId ? 'Unavailable' : 'No media player selected'}</span>
         {entityId && <span class={styles.name}>{entityId}</span>}
       </div>
@@ -76,7 +80,10 @@ export default function MediaCard({ element }: ElementProps) {
     callSvc('media_player', service, data, { entity_id: entityId });
 
   return (
-    <div class={`${styles.card} ${styles.mediaCard}${idle ? ` ${styles.cardDead}` : ''}`}>
+    <div
+      class={`${styles.card} ${styles.mediaCard}${idle ? ` ${styles.cardDead}` : ''}`}
+      style={cardScale}
+    >
       <div class={styles.mediaTop}>
         {art ? (
           <img class={styles.mediaArt} src={art} alt="" />

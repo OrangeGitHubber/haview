@@ -157,7 +157,7 @@
 
 /* discrete size presets (see dayBucket() in WeekCalendar.tsx) instead of a
    continuous cqi formula. Per-bucket px value (DEFAULT_AGENDA_FONT_SIZES,
-   user-overridable via element.options.agendaFontSizes) is applied as an
+   times the Text size knob element.options.fontScale) is applied as an
    inline style directly on this element in WeekCalendar.tsx (via
    ClampedList's style prop) rather than as a CSS rule — entries (direct
    children) then inherit it normally, same as .day below. Values are
@@ -191,8 +191,8 @@
    continuous cqi formula — WeekBoard measures the shared grid container
    once (every day column is equal width) and derives each day's actual
    pixel width, so this now reacts to real size rather than a ratio of it.
-   Per-bucket px value (DEFAULT_DAY_FONT_SIZES, user-overridable via
-   element.options.dayFontSizes) is applied as an inline style directly on
+   Per-bucket px value (DEFAULT_DAY_FONT_SIZES, times the Text size knob
+   element.options.fontScale) is applied as an inline style directly on
    this element in WeekCalendar.tsx rather than as a CSS rule — header and
    events list (direct children) then inherit it normally, no `> *` rule
    needed (that pattern was a leftover from the old cqi container-query

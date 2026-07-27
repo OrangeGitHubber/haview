@@ -6,6 +6,7 @@ import { hasExtraControls } from './lightCaps';
 import { EntityDetailsModal } from './EntityDetailsModal';
 import { MdiIcon } from '../components/MdiIcon';
 import { domainIconNames } from '../lib/entityIcons';
+import { fontScaleOf } from '../lib/fontSizePresets';
 import type { ElementProps } from '../grid/elements';
 import styles from './elements.module.css';
 
@@ -147,10 +148,16 @@ export default function EntityCard({ element }: ElementProps) {
   const entity = useEntity(entityId).value;
   const [details, setDetails] = useState(false);
   const [flash, setFlash] = useState(false);
+  // --card-scale is read by the text classes in elements.module.css (see the
+  // Text size knob in EntityOptionsEditor); when unset it defaults to 1
+  const cardScale = { '--card-scale': String(fontScaleOf(element.options?.fontScale)) } as Record<
+    string,
+    string
+  >;
 
   if (!entityId || !entity) {
     return (
-      <div class={`${styles.card} ${styles.cardDead}`}>
+      <div class={`${styles.card} ${styles.cardDead}`} style={cardScale}>
         <span class={styles.state}>{entityId ? 'Unavailable' : 'No entity selected'}</span>
         {entityId && <span class={styles.name}>{entityId}</span>}
       </div>
@@ -282,6 +289,7 @@ export default function EntityCard({ element }: ElementProps) {
     <>
     <div
       class={cls}
+      style={cardScale}
       onClick={onTap ?? undefined}
       role={onTap ? 'button' : undefined}
       aria-label={name}

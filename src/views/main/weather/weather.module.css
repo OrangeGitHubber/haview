@@ -25,11 +25,10 @@
    harness against real content, not estimated. xs additionally drops the
    hourly row entirely (WeatherWidget's showHourly) rather than shrinking
    text past a readable floor. Children size in em off whichever value
-   applies. The actual per-bucket px value (DEFAULT_WEATHER_FONT_SIZES,
-   user-overridable via element.options.fontSizes) is applied as an inline
-   style in WeatherWidget.tsx rather than here, since it's now per-instance
-   configurable rather than fixed — data-bucket is kept on the element
-   purely so it's visible in devtools while debugging fit issues. */
+   applies. The actual per-bucket px value (DEFAULT_WEATHER_FONT_SIZES, times
+   the Text size knob element.options.fontScale) is applied as an inline
+   style in WeatherWidget.tsx rather than here — data-bucket is kept on the
+   element purely so it's visible in devtools while debugging fit issues. */
 
 .title {
   font-size: 1em;

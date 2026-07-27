@@ -2,6 +2,8 @@ import { Modal } from '../components/Modal';
 import { updateElementOptions, removeElement, newId } from '../lib/settings';
 import { EntityPicker } from '../grid/EntityPicker';
 import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
+import { TextSizeRow } from './TextSizeRow';
+import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
 import { alertCardSize, type AlertItem, type AlertOp, type AlertRibbonOptions } from './AlertRibbon';
 import opt from '../components/options.module.css';
@@ -22,6 +24,7 @@ function needsValue(op: AlertOp): boolean {
 export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: EditorProps) {
   const o = (element.options ?? {}) as AlertRibbonOptions;
   const items = Array.isArray(o.items) ? o.items : [];
+  const fontScale = typeof o.fontScale === 'number' ? o.fontScale : DEFAULT_FONT_SCALE;
 
   const set = (patch: Partial<AlertRibbonOptions>) =>
     updateElementOptions(pageId, element.id, patch);
@@ -149,6 +152,7 @@ export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: E
           />
         </div>
 
+        <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
         <CardTitleRow pageId={pageId} element={element} />
         <CardOpacityRow pageId={pageId} element={element} />
         <div class={opt.footerRow}>

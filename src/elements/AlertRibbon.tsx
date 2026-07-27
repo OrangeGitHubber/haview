@@ -1,6 +1,7 @@
 import type { HassEntity } from '../lib/types';
 import { useEntity } from '../lib/ha/entities';
 import EntityCard from './EntityCard';
+import { fontScaleOf } from '../lib/fontSizePresets';
 import type { ElementProps } from '../grid/elements';
 import type { GridElement } from '../grid/types';
 import styles from './elements.module.css';
@@ -23,6 +24,9 @@ export interface AlertRibbonOptions {
   cardHeight?: number;
   /** legacy S/M/L preset, mapped to px for older configs */
   cardSize?: 's' | 'm' | 'l';
+  /** text-size multiplier (percent, 50–200; 100 = default), passed to the
+      entity cards shown in the ribbon */
+  fontScale?: number;
 }
 
 const LEGACY_SIZES: Record<string, { w: number; h: number }> = {
@@ -92,6 +96,7 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
   const items = Array.isArray(o.items) ? o.items : [];
   const title = o.title?.trim() || 'Alerts';
   const size = alertCardSize(o);
+  const cardScale = { '--card-scale': String(fontScaleOf(o.fontScale)) } as Record<string, string>;
 
   // useEntity is a plain signal getter (not a hook), safe in a loop
   const active = items.filter((it) => {
@@ -106,7 +111,7 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
     y: 0,
     w: 1,
     h: 1,
-    options: { entityId },
+    options: { entityId, fontScale: o.fontScale },
   });
 
   // when nothing is triggered, the ribbon is fully invisible in normal use
@@ -115,7 +120,7 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
   if (active.length === 0) {
     if (!editing) return null;
     return (
-      <div class={`${styles.card} ${styles.alertRibbon}`}>
+      <div class={`${styles.card} ${styles.alertRibbon}`} style={cardScale}>
         <div class={styles.graphHead}>
           <span class={`${styles.name} card-title`}>{title}</span>
         </div>
@@ -127,7 +132,7 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
   }
 
   return (
-    <div class={`${styles.card} ${styles.alertRibbon}`}>
+    <div class={`${styles.card} ${styles.alertRibbon}`} style={cardScale}>
       <div class={styles.graphHead}>
         <span class={`${styles.name} card-title`}>{title}</span>
       </div>
