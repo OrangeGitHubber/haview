@@ -141,7 +141,14 @@ export default function AlertRibbon({ element, editing }: ElementProps) {
           <div
             key={it.id}
             class={styles.alertItem}
-            style={{ width: `${size.w}px`, height: `${size.h}px` }}
+            // sized in rem, not px, so the cards grow with the responsive root
+            // font (clamp(16px,0.8vw,34px) * uiScale) exactly like the entity
+            // text inside them. On a big/high-res TV the root font scales up
+            // ~2x; fixed-px cards stayed 64px while their content doubled, so
+            // it overflowed and got clipped ("severely cut off"). rem keeps the
+            // card-to-content ratio constant at every display size, and is a
+            // no-op on normal screens where the root font sits at its 16px min.
+            style={{ width: `${size.w / 16}rem`, height: `${size.h / 16}rem` }}
           >
             <EntityCard pageId="" element={syntheticFor(it.entityId)} editing={false} />
           </div>
