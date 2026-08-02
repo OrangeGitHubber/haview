@@ -4,6 +4,7 @@ import { fetchServerConfig } from './lib/config';
 import { getConnection } from './lib/ha/connection';
 import { initProfiles } from './lib/settings';
 import { startVersionWatch } from './lib/version';
+import './styles/fonts.css';
 import './styles/theme.css';
 import './styles/base.css';
 

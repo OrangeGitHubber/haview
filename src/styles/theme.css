@@ -1,6 +1,11 @@
 :root {
   color-scheme: dark;
 
+  /* typefaces (self-hosted — see fonts.css). --font-display is the Jakarta
+     face used only on the big numeric readouts; everything else is Inter. */
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', var(--font-ui);
+
   /* dark theme (default — wall displays) */
   --bg: #151312;
   --surface: #201d1b;

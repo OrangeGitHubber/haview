@@ -1,0 +1,54 @@
+/*
+ * Self-hosted UI + display faces, bundled with the app (Vite fingerprints the
+ * woff2 and serves them from the app's own container) so the dashboard renders
+ * IDENTICALLY on the wall TV and the Raspberry Pi and works fully offline — no
+ * CDN, no webfont request that could silently fall back to a system font.
+ *
+ * Only 400/600/700 are shipped on purpose: the widget CSS still carries some
+ * 550/650/750 weights from the system-font era, and with no such faces present
+ * the browser resolves each to the nearest real weight instead of faking a
+ * gradation the renderer would otherwise discard.
+ *
+ * Latin subset (covers Western-European accents, incl. Afrikaans ë/ê/é); any
+ * glyph outside it falls back through the --font-ui stack.
+ */
+
+/* Inter — UI / body / everything that isn't a big number */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/inter-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/inter-latin-700-normal.woff2') format('woff2');
+}
+
+/* Plus Jakarta Sans — display face for the large numeric readouts
+   (clock, temperature, stat-tile value, graph value, thermostat target) */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
+}

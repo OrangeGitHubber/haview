@@ -93,6 +93,7 @@
 
 .temp {
   font-size: 2.3em;
+  font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
