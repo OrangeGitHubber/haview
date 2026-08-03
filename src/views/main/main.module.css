@@ -217,6 +217,10 @@
 
 .today .dayHeader {
   color: var(--accent);
+  /* today's header echoes the clock: same display face + weight, so the
+     accent carries the same visual weight instead of looking faded next to
+     the big clock readout (the date is bumped to 700 below) */
+  font-family: var(--font-display);
   border-bottom-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
@@ -232,6 +236,7 @@
 
 .today .dayDate {
   color: var(--accent);
+  font-weight: 700;
 }
 
 .dayEvents {
