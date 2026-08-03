@@ -128,6 +128,16 @@
   --border-card: color-mix(in srgb, var(--border) var(--card-alpha, 100%), transparent);
 }
 
+/* glass card style: frosted, more see-through fill + a light rim, both still
+   scaled by this item's --card-alpha (so per-card opacity keeps working).
+   --card-blur / --shadow-card come from :root[data-card-style='glass'] so a
+   0-opacity card's inline overrides (GridPage) can still cancel them. */
+:global(:root[data-card-style='glass']) .itemContent {
+  --surface-card: color-mix(in srgb, var(--surface) calc(var(--card-alpha, 100%) * 0.6), transparent);
+  --surface-2-card: color-mix(in srgb, var(--surface-2) calc(var(--card-alpha, 100%) * 0.6), transparent);
+  --border-card: color-mix(in srgb, #ffffff calc(var(--card-alpha, 100%) * 0.5), transparent);
+}
+
 .itemContent > * {
   height: 100%;
   width: 100%;
@@ -333,6 +343,12 @@
   --surface-card: color-mix(in srgb, var(--surface) var(--card-alpha, 100%), transparent);
   --surface-2-card: color-mix(in srgb, var(--surface-2) var(--card-alpha, 100%), transparent);
   --border-card: color-mix(in srgb, var(--border) var(--card-alpha, 100%), transparent);
+}
+
+:global(:root[data-card-style='glass']) .stackItem {
+  --surface-card: color-mix(in srgb, var(--surface) calc(var(--card-alpha, 100%) * 0.6), transparent);
+  --surface-2-card: color-mix(in srgb, var(--surface-2) calc(var(--card-alpha, 100%) * 0.6), transparent);
+  --border-card: color-mix(in srgb, #ffffff calc(var(--card-alpha, 100%) * 0.5), transparent);
 }
 
 .stackItem > * {

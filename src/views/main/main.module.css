@@ -16,6 +16,8 @@
   border-radius: var(--radius);
   padding: 0.875rem 1rem;
   box-shadow: var(--shadow-card, var(--shadow-sm));
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
 }
 
 .weekHeader {
@@ -174,6 +176,8 @@
   background: var(--surface-card, var(--surface));
   border: 1px solid var(--border-card, var(--border));
   border-radius: var(--radius);
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
   min-height: 9.375rem;
   scroll-snap-align: start;
   display: flex;

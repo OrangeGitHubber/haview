@@ -56,6 +56,12 @@ export interface AppSettings {
   colorMode: 'auto' | 'dark' | 'light';
   /** card/container background opacity in percent (30–100) */
   cardOpacity: number;
+  /** card surface style: 'solid' flat panels, or 'glass' frosted translucent
+      cards that blur the background. backdrop-blur is GPU work, so it defaults
+      to 'solid' and is opt-in (fine on the wall TV, heavy on a Raspberry Pi) */
+  cardStyle: 'solid' | 'glass';
+  /** glass frost strength 0–100 (backdrop-blur amount); only used for 'glass' */
+  glassBlur: number;
   /** default for card titles (per-card option overrides) */
   showTitles: boolean;
   /** CSS color overriding the theme accent for card titles; '' = theme */
@@ -151,6 +157,8 @@ function defaults(): AppSettings {
     accentColor: '',
     colorMode: 'auto',
     cardOpacity: 100,
+    cardStyle: 'solid',
+    glassBlur: 60,
     showTitles: true,
     titleColor: '',
     navWidth: 92,
@@ -328,6 +336,11 @@ function normalize(raw: unknown): AppSettings {
       typeof r.cardOpacity === 'number' && Number.isFinite(r.cardOpacity)
         ? Math.min(Math.max(Math.round(r.cardOpacity), 0), 100)
         : base.cardOpacity,
+    cardStyle: r.cardStyle === 'glass' ? 'glass' : 'solid',
+    glassBlur:
+      typeof r.glassBlur === 'number' && Number.isFinite(r.glassBlur)
+        ? Math.min(Math.max(Math.round(r.glassBlur), 0), 100)
+        : base.glassBlur,
     showTitles: r.showTitles !== false,
     titleColor: typeof r.titleColor === 'string' ? r.titleColor : '',
     navWidth:
@@ -655,6 +668,12 @@ settings.subscribe((s) => {
   document.documentElement.style.setProperty('--card-alpha', `${s.cardOpacity}%`);
   document.documentElement.style.setProperty('--nav-width', `${s.navWidth}px`);
   document.documentElement.style.setProperty('--ui-scale', String(s.uiScale / 100));
+  // card style (solid/glass) + frost strength; glass cards read --card-blur
+  document.documentElement.dataset.cardStyle = s.cardStyle;
+  document.documentElement.style.setProperty(
+    '--glass-blur',
+    `${Math.round((s.glassBlur / 100) * 28)}px`,
+  );
   if (s.titleColor) document.documentElement.style.setProperty('--title-color', s.titleColor);
   else document.documentElement.style.removeProperty('--title-color');
   // a custom accent overrides the theme preset's --accent (and derives a

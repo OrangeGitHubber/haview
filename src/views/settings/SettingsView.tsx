@@ -204,6 +204,39 @@ export default function SettingsView() {
                 }
               />
             </Row>
+            <Row label="Card style" hint="Glass frosts cards over the background (uses the GPU)">
+              <div class={styles.modeRow}>
+                {(
+                  [
+                    ['solid', 'Solid'],
+                    ['glass', 'Glass'],
+                  ] as const
+                ).map(([v, label]) => (
+                  <button
+                    key={v}
+                    class={`${styles.modeBtn}${s.cardStyle === v ? ` ${styles.modeActive}` : ''}`}
+                    onClick={() => updateSettings({ cardStyle: v })}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </Row>
+            {s.cardStyle === 'glass' && (
+              <Row label="Glass blur" hint={`${s.glassBlur}% · lower this on a Raspberry Pi`}>
+                <input
+                  type="range"
+                  class={styles.slider}
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={s.glassBlur}
+                  onInput={(e) =>
+                    updateSettings({ glassBlur: Number((e.target as HTMLInputElement).value) })
+                  }
+                />
+              </Row>
+            )}
             <Row label="Display scale" hint={`${s.uiScale}% · text size on this screen`}>
               <input
                 type="range"

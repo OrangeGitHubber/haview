@@ -119,7 +119,10 @@ export default function GridPage({
           if (typeof elAlpha === 'number' && Number.isFinite(elAlpha)) {
             stackStyle['--card-alpha'] = `${effAlpha}%`;
           }
-          if (effAlpha === 0) stackStyle['--shadow-card'] = 'none';
+          if (effAlpha === 0) {
+            stackStyle['--shadow-card'] = 'none';
+            stackStyle['--card-blur'] = 'none'; // no frost on a frameless card
+          }
           const stackTitle =
             typeof el.options?.showTitle === 'boolean'
               ? el.options.showTitle
@@ -294,8 +297,8 @@ export default function GridPage({
           if (typeof elAlpha === 'number' && Number.isFinite(elAlpha)) {
             style = { ...style, '--card-alpha': `${effAlpha}%` };
           }
-          // fully transparent cards drop their shadow (border fades via CSS)
-          if (effAlpha === 0) style = { ...style, '--shadow-card': 'none' };
+          // fully transparent cards drop their shadow + frost (border fades via CSS)
+          if (effAlpha === 0) style = { ...style, '--shadow-card': 'none', '--card-blur': 'none' };
           const showTitle =
             typeof el.options?.showTitle === 'boolean'
               ? el.options.showTitle

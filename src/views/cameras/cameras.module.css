@@ -16,6 +16,8 @@
   border-radius: var(--radius);
   padding: 14px 16px;
   box-shadow: var(--shadow-card, var(--shadow-sm));
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
   overflow: hidden;
 }
 

@@ -2,6 +2,8 @@
   background: var(--surface-card, var(--surface));
   border: 1px solid var(--border-card, var(--border));
   border-radius: var(--radius);
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
   padding: 1em;
   display: grid;
   gap: 0.875em;

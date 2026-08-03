@@ -31,6 +31,8 @@
   border-radius: var(--radius);
   padding: 0.8em;
   box-shadow: var(--shadow-card, var(--shadow-sm));
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
   cursor: pointer;
   transition:
     border-color 0.15s ease,
