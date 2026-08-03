@@ -25,12 +25,15 @@ export function Shell() {
 
   let content;
   let bg: string | null = null;
+  let aurora = false;
   let glass = 50;
   if (route === 'settings') {
     content = <AsyncView key="settings" load={settingsLoader} />;
   } else {
     const page = pages.find((p) => p.id === route) ?? pages[0];
-    bg = backgroundUrl(page.background);
+    // 'aurora' is the reserved value for the animated gradient background
+    aurora = page.background === 'aurora';
+    bg = aurora ? null : backgroundUrl(page.background);
     glass = page.backgroundGlass ?? 50;
     content = <AsyncView key={page.id} load={gridPageLoader} props={{ pageId: page.id }} />;
   }
@@ -66,6 +69,7 @@ export function Shell() {
           }}
         />
       )}
+      {aurora && <div class="page-aurora" aria-hidden="true" />}
       <StatusBanner />
       <Nav />
       <main class="shell-main">{content}</main>

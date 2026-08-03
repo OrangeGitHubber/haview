@@ -362,6 +362,44 @@ video {
   filter: blur(var(--bg-blur, 14px)) brightness(1.05) saturate(0.9) opacity(0.45);
 }
 
+/* ---------- animated "aurora" background ---------- */
+
+/* An ambient, slowly drifting gradient — an alternative to a photo (page
+   background = 'aurora'). Pairs especially well with the Glass card style:
+   the frosted cards finally have something rich to blur. Built from soft
+   radial blobs (the main ones from the theme --accent) over the base bg, moved
+   by a transform-only animation (compositor-cheap — safe on a Raspberry Pi),
+   and very slow, which also helps against burn-in on an always-on wall. */
+.page-aurora {
+  position: fixed;
+  /* oversized so the drift/scale/rotate never exposes an edge */
+  inset: -30%;
+  z-index: -1;
+  background:
+    radial-gradient(38% 46% at 22% 26%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%),
+    radial-gradient(36% 42% at 80% 20%, color-mix(in srgb, #7c6cff 40%, transparent), transparent 68%),
+    radial-gradient(44% 50% at 66% 82%, color-mix(in srgb, #2f9e8f 36%, transparent), transparent 72%),
+    radial-gradient(52% 56% at 40% 58%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 78%),
+    var(--bg);
+  animation: aurora-drift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1.05) rotate(-4deg);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.16) rotate(5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-aurora {
+    animation: none;
+  }
+}
+
 /* ---------- shared modal ---------- */
 
 .modal-overlay {

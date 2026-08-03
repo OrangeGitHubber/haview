@@ -63,6 +63,10 @@ export default function GridPage({
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [bgOpen, setBgOpen] = useState(false);
+  const [bgMode, setBgMode] = useState<'none' | 'aurora' | 'image'>(() => {
+    const b = settings.peek().pages.find((p) => p.id === pageId)?.background;
+    return b === 'aurora' ? 'aurora' : b ? 'image' : 'none';
+  });
   const [optionsFor, setOptionsFor] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -391,54 +395,77 @@ export default function GridPage({
           </header>
           <div class={opt.form}>
             <label class={opt.row}>
-              Image URL
-              <input
-                type="text"
-                value={page.background ?? ''}
-                placeholder="https://… or /local/wall.jpg (served by HA)"
+              Type
+              <select
+                value={bgMode}
                 onChange={(e) => {
-                  // HA serves config/www at /local/ — auto-correct the common mistake
-                  const v = (e.target as HTMLInputElement).value
-                    .trim()
-                    .replace(/^\/config\/www\//, '/local/');
-                  setPageBackground(pageId, v || undefined);
-                }}
-              />
-            </label>
-            <p class={opt.dim}>
-              The image is shown frosted (blurred and dimmed) behind everything on this page.
-            </p>
-            <p class={opt.dim}>
-              <strong>Using an image stored in Home Assistant:</strong> copy the file into the
-              “www” folder inside your HA config directory (create the folder and restart HA if
-              it's new), then enter <code>/local/your-image.jpg</code> here — HA serves the www
-              folder under /local/. Typing /config/www/… is corrected automatically.
-            </p>
-            <p class={opt.dim}>
-              <strong>Using an image from the internet:</strong> paste the full https:// URL.
-            </p>
-            <label class={opt.row}>
-              Glassiness · {page.backgroundGlass ?? 50}%
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={page.backgroundGlass ?? 50}
-                onInput={(e) =>
-                  setPageBackgroundGlass(pageId, Number((e.target as HTMLInputElement).value))
-                }
-              />
-            </label>
-            <div class={opt.footerRow}>
-              <button
-                class={opt.removeBtn}
-                onClick={() => {
-                  setPageBackground(pageId, undefined);
-                  setBgOpen(false);
+                  const m = (e.target as HTMLSelectElement).value as 'none' | 'aurora' | 'image';
+                  setBgMode(m);
+                  if (m === 'none') setPageBackground(pageId, undefined);
+                  else if (m === 'aurora') setPageBackground(pageId, 'aurora');
+                  // image: clear any 'aurora' sentinel; the URL input sets the actual value
+                  else if (page.background === 'aurora') setPageBackground(pageId, undefined);
                 }}
               >
-                Remove background
-              </button>
+                <option value="none">None</option>
+                <option value="aurora">Aurora — animated gradient</option>
+                <option value="image">Image</option>
+              </select>
+            </label>
+
+            {bgMode === 'aurora' && (
+              <p class={opt.dim}>
+                A slow, ambient gradient drawn from your accent colour. It pairs especially well with
+                the <strong>Glass</strong> card style — the frosted cards finally have something rich
+                to blur. The motion is gentle (and pauses when the system prefers reduced motion).
+              </p>
+            )}
+
+            {bgMode === 'image' && (
+              <>
+                <label class={opt.row}>
+                  Image URL
+                  <input
+                    type="text"
+                    value={page.background && page.background !== 'aurora' ? page.background : ''}
+                    placeholder="https://… or /local/wall.jpg (served by HA)"
+                    onChange={(e) => {
+                      // HA serves config/www at /local/ — auto-correct the common mistake
+                      const v = (e.target as HTMLInputElement).value
+                        .trim()
+                        .replace(/^\/config\/www\//, '/local/');
+                      setPageBackground(pageId, v || undefined);
+                    }}
+                  />
+                </label>
+                <p class={opt.dim}>
+                  The image is shown frosted (blurred and dimmed) behind everything on this page.
+                </p>
+                <p class={opt.dim}>
+                  <strong>Using an image stored in Home Assistant:</strong> copy the file into the
+                  “www” folder inside your HA config directory (create the folder and restart HA if
+                  it's new), then enter <code>/local/your-image.jpg</code> here — HA serves the www
+                  folder under /local/. Typing /config/www/… is corrected automatically.
+                </p>
+                <p class={opt.dim}>
+                  <strong>Using an image from the internet:</strong> paste the full https:// URL.
+                </p>
+                <label class={opt.row}>
+                  Glassiness · {page.backgroundGlass ?? 50}%
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={page.backgroundGlass ?? 50}
+                    onInput={(e) =>
+                      setPageBackgroundGlass(pageId, Number((e.target as HTMLInputElement).value))
+                    }
+                  />
+                </label>
+              </>
+            )}
+
+            <div class={opt.footerRow}>
               <button class={opt.doneBtn} onClick={() => setBgOpen(false)}>
                 Done
               </button>
