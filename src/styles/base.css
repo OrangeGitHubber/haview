@@ -364,24 +364,37 @@ video {
 
 /* ---------- animated "aurora" background ---------- */
 
-/* An ambient, slowly drifting gradient — an alternative to a photo (page
-   background = 'aurora'). Pairs especially well with the Glass card style:
-   the frosted cards finally have something rich to blur. Built from soft
-   radial blobs (the main ones from the theme --accent) over the base bg, moved
-   by a transform-only animation (compositor-cheap — safe on a Raspberry Pi),
-   and very slow, which also helps against burn-in on an always-on wall. */
+/* An ambient, drifting gradient — an alternative to a photo (page background =
+   'aurora'). Pairs with the Glass card style: the frosted cards have rich
+   colour to refract. Two counter-drifting layers of saturated radial blobs
+   (the main ones from the theme --accent) over a slightly-lifted warm base, so
+   it reads as luminous colour rather than being crushed to near-black.
+   Transform-only animation (compositor-cheap — safe on a Raspberry Pi) and very
+   slow, which also helps against burn-in on an always-on wall. */
 .page-aurora {
   position: fixed;
   /* oversized so the drift/scale/rotate never exposes an edge */
   inset: -30%;
   z-index: -1;
   background:
-    radial-gradient(38% 46% at 22% 26%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%),
-    radial-gradient(36% 42% at 80% 20%, color-mix(in srgb, #7c6cff 40%, transparent), transparent 68%),
-    radial-gradient(44% 50% at 66% 82%, color-mix(in srgb, #2f9e8f 36%, transparent), transparent 72%),
-    radial-gradient(52% 56% at 40% 58%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 78%),
-    var(--bg);
-  animation: aurora-drift 48s ease-in-out infinite alternate;
+    radial-gradient(40% 46% at 20% 24%, color-mix(in srgb, var(--accent) 80%, transparent), transparent 66%),
+    radial-gradient(38% 44% at 82% 18%, color-mix(in srgb, #8a6cff 62%, transparent), transparent 64%),
+    radial-gradient(46% 52% at 72% 84%, color-mix(in srgb, #22b8a6 52%, transparent), transparent 68%),
+    radial-gradient(42% 48% at 44% 64%, color-mix(in srgb, #ff5f7e 38%, transparent), transparent 70%),
+    radial-gradient(120% 110% at 50% 26%, color-mix(in srgb, var(--accent) 14%, var(--bg)), var(--bg) 72%);
+  animation: aurora-drift 52s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* a second, counter-drifting layer of warm highlights for depth + motion */
+.page-aurora::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(34% 40% at 68% 30%, color-mix(in srgb, #ffb44a 44%, transparent), transparent 66%),
+    radial-gradient(40% 46% at 26% 76%, color-mix(in srgb, var(--accent) 44%, transparent), transparent 70%);
+  animation: aurora-drift-2 68s ease-in-out infinite alternate;
   will-change: transform;
 }
 
@@ -394,8 +407,29 @@ video {
   }
 }
 
+@keyframes aurora-drift-2 {
+  from {
+    transform: translate3d(2%, 1%, 0) scale(1.12) rotate(4deg);
+  }
+  to {
+    transform: translate3d(-3%, -2%, 0) scale(1.04) rotate(-5deg);
+  }
+}
+
+/* lighter theme: keep the colour from washing out the page */
+@media (prefers-color-scheme: light) {
+  :root:not([data-mode='dark']) .page-aurora {
+    opacity: 0.72;
+  }
+}
+
+:root[data-mode='light'] .page-aurora {
+  opacity: 0.72;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .page-aurora {
+  .page-aurora,
+  .page-aurora::before {
     animation: none;
   }
 }
