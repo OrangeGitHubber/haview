@@ -223,7 +223,10 @@ export default function SettingsView() {
               </div>
             </Row>
             {s.cardStyle === 'glass' && (
-              <Row label="Glass blur" hint={`${s.glassBlur}% · lower this on a Raspberry Pi`}>
+              <Row
+                label="Glass frost"
+                hint={`${s.glassBlur}% · clear glass → milky frost (ease off on a Raspberry Pi)`}
+              >
                 <input
                   type="range"
                   class={styles.slider}

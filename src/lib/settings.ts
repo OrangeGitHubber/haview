@@ -60,7 +60,8 @@ export interface AppSettings {
       cards that blur the background. backdrop-blur is GPU work, so it defaults
       to 'solid' and is opt-in (fine on the wall TV, heavy on a Raspberry Pi) */
   cardStyle: 'solid' | 'glass';
-  /** glass frost strength 0–100 (backdrop-blur amount); only used for 'glass' */
+  /** glass frost strength 0–100 — drives both the card fill opacity and the
+      backdrop-blur amount; only used when cardStyle is 'glass' */
   glassBlur: number;
   /** default for card titles (per-card option overrides) */
   showTitles: boolean;
@@ -668,11 +669,18 @@ settings.subscribe((s) => {
   document.documentElement.style.setProperty('--card-alpha', `${s.cardOpacity}%`);
   document.documentElement.style.setProperty('--nav-width', `${s.navWidth}px`);
   document.documentElement.style.setProperty('--ui-scale', String(s.uiScale / 100));
-  // card style (solid/glass) + frost strength; glass cards read --card-blur
+  // card style (solid/glass) + frost strength. The one "frost" slider drives
+  // BOTH the backdrop-blur (visible over a photo) and the glass fill opacity
+  // (visible over anything, incl. the smooth Aurora — a soft gradient shows no
+  // difference from blur alone). --glass-fill scales the card's --card-alpha.
   document.documentElement.dataset.cardStyle = s.cardStyle;
   document.documentElement.style.setProperty(
     '--glass-blur',
     `${Math.round((s.glassBlur / 100) * 28)}px`,
+  );
+  document.documentElement.style.setProperty(
+    '--glass-fill',
+    (0.32 + (s.glassBlur / 100) * 0.56).toFixed(2),
   );
   if (s.titleColor) document.documentElement.style.setProperty('--title-color', s.titleColor);
   else document.documentElement.style.removeProperty('--title-color');
