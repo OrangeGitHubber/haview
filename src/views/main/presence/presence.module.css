@@ -18,6 +18,7 @@
    PresenceWidget.tsx rather than here, matching WeatherWidget — data-bucket
    stays on the card purely for devtools inspection. */
 .title {
+  font-size: calc(var(--fs-title) * var(--card-scale, 1));
   font-weight: 650;
   color: var(--text-dim);
 }

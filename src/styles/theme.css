@@ -16,6 +16,10 @@
   --fs-lg: 1.27rem;
   --fs-xl: 1.6rem;
   --fs-2xl: 2.4rem;
+  /* unified card/widget title size — every card title uses this so a title
+     is the same size in every widget (still multiplied by the per-card Text
+     size slider via --card-scale where the widget supports it) */
+  --fs-title: 1rem;
 
   /* dark theme (default — wall displays) */
   --bg: #151312;
