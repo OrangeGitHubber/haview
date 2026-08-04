@@ -88,6 +88,9 @@ Evidence: `src/elements/EntityCard.tsx`, `src/elements/elements.module.css`.
 ## Setup-flow UX
 
 ### 9. Per-card settings modal — mostly SHIPPED, remainder below
+Also shipped 91f040e: the dialog's horizontal scrollbar (inline summary spans + grid tracks
+defaulting to `min-width:auto`) and an "Edit the cards inside this collection" badge, since a
+collection's gear can only ever edit the container.
 The rebuild landed (see Shipped). What's left from
 [`entity-card-settings-review.md`](entity-card-settings-review.md):
 - [ ] `aria-pressed` / `role="radio"` on the pill segments. The groups are now labelled (`role="group"` + `aria-labelledby`) and the active pill has a non-colour ✓ cue, but the pills are still plain buttons, so a screen reader doesn't announce which is selected.
