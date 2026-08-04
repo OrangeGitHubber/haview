@@ -14,7 +14,7 @@
   background: var(--surface-card, var(--surface));
   border: 1px solid var(--border-card, var(--border));
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: var(--card-pad);
   box-shadow: var(--shadow-card, var(--shadow-sm));
   backdrop-filter: var(--card-blur, none);
   -webkit-backdrop-filter: var(--card-blur, none);

@@ -40,6 +40,10 @@
 
   --radius: 12px;
   --radius-sm: 8px;
+  /* uniform inner padding for every widget card (12px at 100% Display scale;
+     rem so it scales with the global Display slider, not the per-card Text
+     slider) */
+  --card-pad: 0.75rem;
   --nav-h: 58px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.22);
