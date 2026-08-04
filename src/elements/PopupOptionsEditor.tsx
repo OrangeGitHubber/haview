@@ -47,12 +47,16 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
             }}
           >
             <option value="">Choose a page…</option>
-            {pages.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-                {p.hidden ? '' : ' (also shown in sidebar)'}
-              </option>
-            ))}
+            {/* exclude this element's own page — a collection can't point at
+                itself (that would recurse and freeze in panel mode) */}
+            {pages
+              .filter((p) => p.id !== pageId)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title}
+                  {p.hidden ? '' : ' (also shown in sidebar)'}
+                </option>
+              ))}
           </select>
         </label>
 

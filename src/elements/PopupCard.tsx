@@ -83,6 +83,29 @@ export default function PopupCard({ element }: ElementProps) {
         ) : (
           <div class={styles.panelFlow}>
             {stackOrder(target.elements).map((el) => {
+              // Never render a nested collection inline: a collection whose
+              // panel (directly or transitively) contains itself would recurse
+              // forever and freeze the app. Show a nested collection as a nav
+              // tile instead — this breaks every possible cycle.
+              if (el.type === 'popup') {
+                const po = (el.options ?? {}) as PopupOptions;
+                const sub = po.targetPageId
+                  ? settings.value.pages.find((p) => p.id === po.targetPageId)
+                  : undefined;
+                return (
+                  <button
+                    key={el.id}
+                    class={styles.subCollection}
+                    style={{ gridRow: 'span 2' }}
+                    onClick={() => sub && navigate(sub.id)}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={iconPath(po.icon || sub?.icon || 'home')} fill="currentColor" />
+                    </svg>
+                    <span>{po.title?.trim() || sub?.title || 'Collection'}</span>
+                  </button>
+                );
+              }
               const def = elementDefs[el.type];
               const elAlpha = el.options?.opacity;
               const hasAlpha = typeof elAlpha === 'number' && Number.isFinite(elAlpha);
