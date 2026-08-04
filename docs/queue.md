@@ -94,7 +94,7 @@ collection's gear can only ever edit the container.
 The rebuild landed (see Shipped). What's left from
 [`entity-card-settings-review.md`](entity-card-settings-review.md):
 - [ ] `aria-pressed` / `role="radio"` on the pill segments. The groups are now labelled (`role="group"` + `aria-labelledby`) and the active pill has a non-colour ✓ cue, but the pills are still plain buttons, so a screen reader doesn't announce which is selected.
-- [ ] Delete the two files the refactor orphaned — `src/elements/CardOpacityRow.tsx` and `src/elements/FontSizeRow.tsx`. Both are dead (nothing imports them, `tsc` passes), but every deletion attempt was blocked by a permission prompt, so they're still in the tree.
+- [x] ~~Delete the two files the refactor orphaned — `CardOpacityRow.tsx` and `FontSizeRow.tsx`.~~ Done 2026-08-04.
 - [ ] `moveElementToPage` undo restores the page but not the original slot (it re-places into the first free slot both ways). Fine in practice; worth a note if slots ever matter.
 
 ---
