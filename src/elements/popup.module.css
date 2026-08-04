@@ -70,9 +70,56 @@
   min-width: 0;
   font-size: var(--fs-title);
   font-weight: 650;
+  /* coloured directly (not via .card-title) so the collection header always
+     shows, even when card titles are turned off on the page */
+  color: var(--title-color, var(--accent));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* an empty collection shown as a panel — a clearly-visible, tappable
+   placeholder so a freshly-created collection isn't invisible */
+.panelEmpty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 28%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  backdrop-filter: var(--card-blur, none);
+  -webkit-backdrop-filter: var(--card-blur, none);
+}
+
+.panelEmpty:hover {
+  border-color: var(--accent);
+}
+
+.panelEmptyIcon {
+  width: 2em;
+  height: 2em;
+  color: var(--accent);
+}
+
+.panelEmptyTitle {
+  font-size: var(--fs-title);
+  font-weight: 650;
+  color: var(--title-color, var(--accent));
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.panelEmptyHint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
 }
 
 .panelOpen {

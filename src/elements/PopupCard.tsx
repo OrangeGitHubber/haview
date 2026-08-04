@@ -55,14 +55,28 @@ export default function PopupCard({ element }: ElementProps) {
 
   // ---- inline panel: the collection's cards, live + read-only, auto-flowed ----
   if (o.display === 'panel') {
+    // An empty collection is a clearly-visible, tappable placeholder (not a
+    // blank header that can even vanish when titles are off) so a freshly
+    // created collection is obviously there and you can tap in to add devices.
+    if (target.elements.length === 0) {
+      return (
+        <button
+          class={styles.panelEmpty}
+          onClick={() => navigate(target.id)}
+          title="Open collection to add devices"
+        >
+          <svg class={styles.panelEmptyIcon} viewBox="0 0 24 24" aria-hidden="true">
+            <path d={iconPath(icon)} fill="currentColor" />
+          </svg>
+          <span class={styles.panelEmptyTitle}>{title}</span>
+          <span class={styles.panelEmptyHint}>Empty — tap to add devices</span>
+        </button>
+      );
+    }
     const globalTitles = settings.value.showTitles;
     return (
       <div class={styles.panel}>
-        <button
-          class={`${styles.panelHead} card-title`}
-          onClick={() => navigate(target.id)}
-          title="Open collection"
-        >
+        <button class={styles.panelHead} onClick={() => navigate(target.id)} title="Open collection">
           <svg class={styles.panelHeadIcon} viewBox="0 0 24 24" aria-hidden="true">
             <path d={iconPath(icon)} fill="currentColor" />
           </svg>
@@ -78,76 +92,72 @@ export default function PopupCard({ element }: ElementProps) {
             />
           </svg>
         </button>
-        {target.elements.length === 0 ? (
-          <p class={styles.hint}>Empty — open the collection to add devices.</p>
-        ) : (
-          <div class={styles.panelFlow}>
-            {stackOrder(target.elements).map((el) => {
-              // Never render a nested collection inline: a collection whose
-              // panel (directly or transitively) contains itself would recurse
-              // forever and freeze the app. Show a nested collection as a nav
-              // tile instead — this breaks every possible cycle.
-              if (el.type === 'popup') {
-                const po = (el.options ?? {}) as PopupOptions;
-                const sub = po.targetPageId
-                  ? settings.value.pages.find((p) => p.id === po.targetPageId)
-                  : undefined;
-                return (
-                  <button
-                    key={el.id}
-                    class={styles.subCollection}
-                    style={{ gridRow: 'span 2' }}
-                    onClick={() => sub && navigate(sub.id)}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d={iconPath(po.icon || sub?.icon || 'home')} fill="currentColor" />
-                    </svg>
-                    <span>{po.title?.trim() || sub?.title || 'Collection'}</span>
-                  </button>
-                );
-              }
-              const def = elementDefs[el.type];
-              const elAlpha = el.options?.opacity;
-              const hasAlpha = typeof elAlpha === 'number' && Number.isFinite(elAlpha);
-              const effAlpha = hasAlpha
-                ? Math.min(Math.max(elAlpha as number, 0), 100)
-                : settings.value.cardOpacity;
-              const itemStyle: Record<string, string> = {
-                // taller cards get more rows; capped so one card can't dominate
-                gridRow: `span ${Math.min(Math.max(Math.round(el.h / 2), 1), 4)}`,
-              };
-              if (hasAlpha) itemStyle['--card-alpha'] = `${effAlpha}%`;
-              if (effAlpha === 0) {
-                itemStyle['--shadow-card'] = 'none';
-                itemStyle['--card-blur'] = 'none';
-              }
-              const tc = el.options?.titleColor;
-              if (typeof tc === 'string' && tc) itemStyle['--title-color'] = tc;
-              const showTitle =
-                typeof el.options?.showTitle === 'boolean'
-                  ? el.options.showTitle
-                  : typeof target.showTitles === 'boolean'
-                    ? target.showTitles
-                    : globalTitles;
+        <div class={styles.panelFlow}>
+          {stackOrder(target.elements).map((el) => {
+            // Never render a nested collection inline: a collection whose panel
+            // (directly or transitively) contains itself would recurse forever
+            // and freeze the app. Show a nested collection as a nav tile
+            // instead — this breaks every possible cycle.
+            if (el.type === 'popup') {
+              const po = (el.options ?? {}) as PopupOptions;
+              const sub = po.targetPageId
+                ? settings.value.pages.find((p) => p.id === po.targetPageId)
+                : undefined;
               return (
-                <div
+                <button
                   key={el.id}
-                  class={`${styles.flowItem}${showTitle ? '' : ' hide-card-title'}`}
-                  style={itemStyle}
+                  class={styles.subCollection}
+                  style={{ gridRow: 'span 2' }}
+                  onClick={() => sub && navigate(sub.id)}
                 >
-                  {def ? (
-                    <AsyncView
-                      load={def.load}
-                      props={{ pageId: target.id, element: el, editing: false }}
-                    />
-                  ) : (
-                    <div class={styles.unknownMini}>“{el.type}”</div>
-                  )}
-                </div>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d={iconPath(po.icon || sub?.icon || 'home')} fill="currentColor" />
+                  </svg>
+                  <span>{po.title?.trim() || sub?.title || 'Collection'}</span>
+                </button>
               );
-            })}
-          </div>
-        )}
+            }
+            const def = elementDefs[el.type];
+            const elAlpha = el.options?.opacity;
+            const hasAlpha = typeof elAlpha === 'number' && Number.isFinite(elAlpha);
+            const effAlpha = hasAlpha
+              ? Math.min(Math.max(elAlpha as number, 0), 100)
+              : settings.value.cardOpacity;
+            const itemStyle: Record<string, string> = {
+              // taller cards get more rows; capped so one card can't dominate
+              gridRow: `span ${Math.min(Math.max(Math.round(el.h / 2), 1), 4)}`,
+            };
+            if (hasAlpha) itemStyle['--card-alpha'] = `${effAlpha}%`;
+            if (effAlpha === 0) {
+              itemStyle['--shadow-card'] = 'none';
+              itemStyle['--card-blur'] = 'none';
+            }
+            const tc = el.options?.titleColor;
+            if (typeof tc === 'string' && tc) itemStyle['--title-color'] = tc;
+            const showTitle =
+              typeof el.options?.showTitle === 'boolean'
+                ? el.options.showTitle
+                : typeof target.showTitles === 'boolean'
+                  ? target.showTitles
+                  : globalTitles;
+            return (
+              <div
+                key={el.id}
+                class={`${styles.flowItem}${showTitle ? '' : ' hide-card-title'}`}
+                style={itemStyle}
+              >
+                {def ? (
+                  <AsyncView
+                    load={def.load}
+                    props={{ pageId: target.id, element: el, editing: false }}
+                  />
+                ) : (
+                  <div class={styles.unknownMini}>“{el.type}”</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
