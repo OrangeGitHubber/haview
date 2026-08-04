@@ -99,7 +99,9 @@ export default function GraphCard({ element }: ElementProps) {
 
   const shown = hover ? hover.v : current;
 
-  // ---- compact stat tile: icon + label + value + sparkline ----
+  // ---- compact stat tile: mirrors the entity card exactly (title, then
+  // icon + value) and just appends a sparkline, so a graph tile and an entity
+  // card read as one family ----
   if (o.layout === 'tile') {
     const iconNames = [
       ...(typeof o.icon === 'string' && o.icon ? [o.icon] : []),
@@ -107,14 +109,16 @@ export default function GraphCard({ element }: ElementProps) {
       ...domainIconNames(entityId),
     ];
     return (
-      <div class={`${styles.card} ${styles.tileCard}`} style={cardScale}>
-        <MdiIcon names={iconNames} class={styles.tileIcon} />
-        <div class={styles.tileBody}>
-          <span class={styles.tileLabel}>{title}</span>
-          <span class={styles.tileValue}>
-            {current !== null ? fmtVal(current) : '—'}
-            {unit && <span class={styles.tileUnit}> {unit}</span>}
-          </span>
+      <div class={styles.card} style={cardScale}>
+        <span class={`${styles.name} card-title`}>{title}</span>
+        <div class={styles.cardBottom}>
+          <div class={styles.cardTop}>
+            <MdiIcon names={iconNames} class={styles.glyph} />
+            <span class={styles.state}>
+              {current !== null ? fmtVal(current) : '—'}
+              {unit ? ` ${unit}` : ''}
+            </span>
+          </div>
           {points.length >= 2 && (
             <svg
               class={styles.tileSpark}
