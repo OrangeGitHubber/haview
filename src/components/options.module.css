@@ -149,6 +149,15 @@
   font-size: 0.85rem;
 }
 
+.warn {
+  color: #e7d3a6;
+  background: color-mix(in srgb, var(--yellow) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--yellow) 32%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  font-size: 0.82rem;
+}
+
 /* a text-link-style button for secondary actions ("…or link an existing page") */
 .linkBtn {
   justify-self: start;

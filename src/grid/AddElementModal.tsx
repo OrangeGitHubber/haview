@@ -11,7 +11,7 @@ import {
   deviceName,
   type EntityEntry,
 } from '../lib/ha/registries';
-import { settings, addElement, newId } from '../lib/settings';
+import { settings, addElement, addPage, newId } from '../lib/settings';
 import { elementDefs } from './elements';
 import { findFreeSlot } from './layout';
 import { MdiIcon } from '../components/MdiIcon';
@@ -301,7 +301,16 @@ export function AddElementModal({
               <span>{d.title}</span>
               <button
                 onClick={() => {
-                  const id = placeElement(pageId, d.type);
+                  // a Collection gets its own fresh empty page automatically —
+                  // no page-picking step, so it can't be mis-linked
+                  const options =
+                    d.type === 'popup'
+                      ? {
+                          targetPageId: addPage({ title: 'New collection', hidden: true }).id,
+                          display: 'panel',
+                        }
+                      : undefined;
+                  const id = placeElement(pageId, d.type, options);
                   onClose();
                   // jump straight into the new element's settings
                   if (id && d.optionsLoader && onPlaced) onPlaced(id);

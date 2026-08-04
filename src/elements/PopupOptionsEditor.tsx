@@ -1,6 +1,13 @@
 import { useState } from 'preact/hooks';
 import { Modal } from '../components/Modal';
-import { settings, addPage, updateElementOptions, removeElement } from '../lib/settings';
+import {
+  settings,
+  addPage,
+  updateElementOptions,
+  removeElement,
+  renamePage,
+  setPageIcon,
+} from '../lib/settings';
 import { navigate } from '../lib/router';
 import { iconPath } from '../lib/icons';
 import { IconPickerModal } from '../views/settings/IconPickerModal';
@@ -14,22 +21,29 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
   const pages = settings.value.pages;
   const currentPage = pages.find((p) => p.id === pageId);
   const target = o.targetPageId ? pages.find((p) => p.id === o.targetPageId) : undefined;
+  // pointing at its own page is invalid (recurses/freezes in panel mode, and
+  // "open" goes nowhere) — treat it as not-linked so it can be re-pointed
+  const selfRef = !!target && target.id === pageId;
+  const linked = target && !selfRef ? target : undefined;
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [linkExisting, setLinkExisting] = useState(false);
+  const [relink, setRelink] = useState(false);
   const set = (patch: Partial<PopupOptions>) => updateElementOptions(pageId, element.id, patch);
 
   const createCollection = () => {
-    const name = newName.trim();
-    if (!name) return;
-    const page = addPage({ title: name, hidden: true });
+    const page = addPage({ title: newName.trim() || 'New collection', hidden: true });
     set({ targetPageId: page.id });
     setNewName('');
   };
 
-  // exclude this element's own page — a collection can't point at itself
-  // (that would recurse and freeze in panel mode)
+  // never offer this element's own page as a target
   const others = pages.filter((p) => p.id !== pageId);
+  const pageOptions = others.map((p) => (
+    <option key={p.id} value={p.id}>
+      {p.title}
+      {p.hidden ? '' : ' (in sidebar)'}
+    </option>
+  ));
 
   return (
     <Modal onClose={onClose} maxWidth={430}>
@@ -40,13 +54,19 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
         </button>
       </header>
       <div class={opt.form}>
-        {!target ? (
-          /* not linked yet — creating a new collection is the primary path */
+        {!linked ? (
+          /* not linked (or self-referencing) — creating is the primary path */
           <>
+            {selfRef && (
+              <p class={opt.warn}>
+                This collection was pointing at its own page, which can't work. Create a new one or
+                link a different page below.
+              </p>
+            )}
             <p class={opt.dim}>
               A collection is a group of devices on their own page. This card stays here on{' '}
-              <strong>{currentPage?.title ?? 'this page'}</strong> and shows that collection; its
-              devices live on the collection's own page.
+              <strong>{currentPage?.title ?? 'this page'}</strong>; the devices live on the
+              collection's own page.
             </p>
             <label class={opt.row}>
               Name the new collection
@@ -54,57 +74,45 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
                 <input
                   type="text"
                   value={newName}
-                  placeholder="e.g. Outside"
+                  placeholder="e.g. Bedroom"
                   style={{ flex: 1 }}
                   onInput={(e) => setNewName((e.target as HTMLInputElement).value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') createCollection();
                   }}
                 />
-                <button class={opt.segBtn} onClick={createCollection} disabled={!newName.trim()}>
+                <button class={opt.segBtn} onClick={createCollection}>
                   Create
                 </button>
               </div>
             </label>
-            {others.length > 0 &&
-              (linkExisting ? (
-                <label class={opt.row}>
-                  Link an existing page instead
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const v = (e.target as HTMLSelectElement).value;
-                      if (v) set({ targetPageId: v });
-                    }}
-                  >
-                    <option value="">Choose a page…</option>
-                    {others.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.title}
-                        {p.hidden ? '' : ' (also in sidebar)'}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                <button class={opt.linkBtn} onClick={() => setLinkExisting(true)}>
-                  …or link an existing page
-                </button>
-              ))}
+            {others.length > 0 && (
+              <label class={opt.row}>
+                …or link an existing collection
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const v = (e.target as HTMLSelectElement).value;
+                    if (v) set({ targetPageId: v });
+                  }}
+                >
+                  <option value="">Choose a page…</option>
+                  {pageOptions}
+                </select>
+              </label>
+            )}
           </>
         ) : (
-          /* linked — show what it points at and how it displays */
+          /* linked — name / how it shows / open, with re-link tucked away */
           <>
-            <p class={opt.dim}>
-              Showing <strong>{target.title}</strong> —{' '}
-              <button
-                class={opt.linkBtn}
-                style={{ display: 'inline' }}
-                onClick={() => navigate(target.id)}
-              >
-                open to add or edit its devices →
-              </button>
-            </p>
+            <label class={opt.row}>
+              Name
+              <input
+                type="text"
+                value={linked.title}
+                onInput={(e) => renamePage(linked.id, (e.target as HTMLInputElement).value)}
+              />
+            </label>
 
             <label class={opt.row}>
               Show as
@@ -119,30 +127,50 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
               </select>
             </label>
 
-            <label class={opt.row}>
-              Title
-              <input
-                type="text"
-                value={o.title ?? ''}
-                placeholder={target.title}
-                onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
-              />
-            </label>
-
             <div class={opt.row}>
               Icon
               <button class={opt.iconBtn} onClick={() => setIconPickerOpen(true)}>
                 <svg viewBox="0 0 24 24">
-                  <path d={iconPath(o.icon || target.icon || 'home')} fill="currentColor" />
+                  <path d={iconPath(o.icon || linked.icon || 'home')} fill="currentColor" />
                 </svg>
               </button>
             </div>
 
             <CardOpacityRow pageId={pageId} element={element} />
 
-            <button class={opt.linkBtn} onClick={() => set({ targetPageId: undefined })}>
-              Point this at a different collection…
+            <button
+              class={opt.doneBtn}
+              style={{ justifySelf: 'start' }}
+              onClick={() => {
+                onClose();
+                navigate(linked.id);
+              }}
+            >
+              Open “{linked.title}” to add devices →
             </button>
+
+            {relink ? (
+              <label class={opt.row}>
+                Point at a different collection
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const v = (e.target as HTMLSelectElement).value;
+                    if (v) {
+                      set({ targetPageId: v });
+                      setRelink(false);
+                    }
+                  }}
+                >
+                  <option value="">Choose a page…</option>
+                  {pageOptions}
+                </select>
+              </label>
+            ) : (
+              <button class={opt.linkBtn} onClick={() => setRelink(true)}>
+                Point at a different collection…
+              </button>
+            )}
           </>
         )}
 
@@ -163,8 +191,10 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
       </div>
       {iconPickerOpen && (
         <IconPickerModal
-          current={o.icon || target?.icon || 'home'}
-          onPick={(name) => set({ icon: name })}
+          current={o.icon || linked?.icon || 'home'}
+          onPick={(name) => {
+            if (linked) setPageIcon(linked.id, name);
+          }}
           onClose={() => setIconPickerOpen(false)}
         />
       )}
