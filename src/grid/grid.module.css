@@ -252,6 +252,55 @@
   height: 18px;
 }
 
+.moveBadge {
+  position: absolute;
+  top: -12px;
+  right: 72px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+}
+
+.moveBadge:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.moveBadge svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- "move card to…" picker ---------- */
+
+.moveList {
+  display: grid;
+  gap: 8px;
+}
+
+.moveTarget {
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.moveTarget:hover {
+  border-color: var(--accent);
+}
+
 /* ---------- drop ghost ---------- */
 
 .ghost {

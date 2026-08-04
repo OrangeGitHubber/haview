@@ -634,6 +634,28 @@ export function moveResizeElement(pageId: string, elementId: string, rect: GridR
   });
 }
 
+/** Move an element to another page (e.g. into a collection). It's re-placed at
+    the first free slot on the destination so it can't collide or land
+    off-canvas; its size is preserved. */
+export function moveElementToPage(fromPageId: string, elementId: string, toPageId: string): void {
+  if (fromPageId === toPageId) return;
+  const pages = settings.peek().pages;
+  const from = pages.find((p) => p.id === fromPageId);
+  const to = pages.find((p) => p.id === toPageId);
+  const el = from?.elements.find((e) => e.id === elementId);
+  if (!from || !to || !el) return;
+  const moved: GridElement = { ...el, ...findFreeSlot(to.elements, el.w, el.h) };
+  updateSettings({
+    pages: pages.map((p) => {
+      if (p.id === fromPageId) {
+        return { ...p, elements: p.elements.filter((e) => e.id !== elementId) };
+      }
+      if (p.id === toPageId) return { ...p, elements: [...p.elements, moved] };
+      return p;
+    }),
+  });
+}
+
 /* ---------- export / import ---------- */
 
 export function exportSettings(): string {

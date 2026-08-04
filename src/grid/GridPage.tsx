@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   settings,
   moveResizeElement,
+  moveElementToPage,
   removeElement,
   renamePage,
   setPageBackground,
@@ -68,6 +69,7 @@ export default function GridPage({
     return b === 'aurora' ? 'aurora' : b ? 'image' : 'none';
   });
   const [optionsFor, setOptionsFor] = useState<string | null>(null);
+  const [moveFor, setMoveFor] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -352,6 +354,9 @@ export default function GridPage({
               onEnd={finishDrag}
               onDelete={() => removeElement(pageId, el.id)}
               onOptions={def?.optionsLoader ? () => setOptionsFor(el.id) : undefined}
+              onRelocate={
+                settings.value.pages.length > 1 ? () => setMoveFor(el.id) : undefined
+              }
             >
               {def ? (
                 <AsyncView load={def.load} props={{ pageId, element: el, editing }} />
@@ -469,6 +474,40 @@ export default function GridPage({
               <button class={opt.doneBtn} onClick={() => setBgOpen(false)}>
                 Done
               </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {moveFor && (
+        <Modal onClose={() => setMoveFor(null)} maxWidth={380}>
+          <header class={opt.header}>
+            <span>Move card to…</span>
+            <button class={opt.close} onClick={() => setMoveFor(null)} aria-label="Close">
+              ✕
+            </button>
+          </header>
+          <div class={opt.form}>
+            <p class={opt.dim}>
+              Moves this card to another page or collection, placing it in the first free spot
+              there. Its size is kept.
+            </p>
+            <div class={styles.moveList}>
+              {settings.value.pages
+                .filter((p) => p.id !== pageId)
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    class={styles.moveTarget}
+                    onClick={() => {
+                      moveElementToPage(pageId, moveFor, p.id);
+                      setMoveFor(null);
+                    }}
+                  >
+                    {p.title}
+                    {p.hidden ? ' · collection' : ''}
+                  </button>
+                ))}
             </div>
           </div>
         </Modal>

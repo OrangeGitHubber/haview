@@ -30,14 +30,14 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
   return (
     <Modal onClose={onClose} maxWidth={420}>
       <header class={opt.header}>
-        <span>Room popup settings</span>
+        <span>Collection settings</span>
         <button class={opt.close} onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
       <div class={opt.form}>
         <label class={opt.row}>
-          Room page
+          Collection page
           <select
             value={o.targetPageId ?? ''}
             onChange={(e) => {
@@ -57,12 +57,12 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
         </label>
 
         <div class={opt.row}>
-          Or create a new room page
+          Or create a new collection
           <div class={opt.seg}>
             <input
               type="text"
               value={newRoomName}
-              placeholder="e.g. Bedroom"
+              placeholder="e.g. Outside"
               style={{ flex: 1 }}
               onInput={(e) => setNewRoomName((e.target as HTMLInputElement).value)}
               onKeyDown={(e) => {
@@ -74,8 +74,8 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
             </button>
           </div>
           <span class={opt.dim}>
-            Creates a new page hidden from the sidebar and links it here. It starts empty — add
-            devices to it the same way as any page.
+            Creates a new collection page, hidden from the sidebar, and links it here. It starts
+            empty — add devices to it the same way as any page.
           </span>
         </div>
 
@@ -106,17 +106,30 @@ export default function PopupOptionsEditor({ pageId, element, onClose }: EditorP
         )}
 
         <label class={opt.row}>
-          Tile title
+          Show as
+          <select
+            value={o.display ?? 'tile'}
+            onChange={(e) =>
+              set({ display: (e.target as HTMLSelectElement).value as 'tile' | 'panel' })
+            }
+          >
+            <option value="tile">Tile — tap to open</option>
+            <option value="panel">Panel — cards shown inline</option>
+          </select>
+        </label>
+
+        <label class={opt.row}>
+          Title
           <input
             type="text"
             value={o.title ?? ''}
-            placeholder={target?.title ?? 'Room'}
+            placeholder={target?.title ?? 'Collection'}
             onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
           />
         </label>
 
         <div class={opt.row}>
-          Tile icon
+          Icon
           <button class={opt.iconBtn} onClick={() => setIconPickerOpen(true)}>
             <svg viewBox="0 0 24 24">
               <path d={iconPath(o.icon || target?.icon || 'home')} fill="currentColor" />

@@ -107,7 +107,7 @@ export const elementDefs: Record<string, ElementDef> = {
   },
   popup: {
     type: 'popup',
-    title: 'Room popup',
+    title: 'Collection',
     load: () => import('../elements/PopupCard'),
     optionsLoader: () => import('../elements/PopupOptionsEditor'),
     defaultSize: { w: 6, h: 4 },

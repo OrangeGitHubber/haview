@@ -5,6 +5,10 @@ import styles from './grid.module.css';
 const X_ICON =
   'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z';
 
+// "open elsewhere" — move this card to another page/collection
+const MOVE_ICON =
+  'M19 13v6H5V5h6V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z';
+
 /**
  * One absolutely-positioned grid element. In edit mode a transparent overlay
  * captures pointer drags (so card-internal buttons are inert), an SE handle
@@ -21,6 +25,7 @@ export function GridItem({
   onEnd,
   onDelete,
   onOptions,
+  onRelocate,
   children,
 }: {
   style: JSX.CSSProperties;
@@ -34,6 +39,8 @@ export function GridItem({
   onDelete: () => void;
   /** present when the element type has a per-instance options editor */
   onOptions?: () => void;
+  /** opens the "move this card to another page/collection" picker */
+  onRelocate?: () => void;
   children: ComponentChildren;
 }) {
   const press =
@@ -88,6 +95,18 @@ export function GridItem({
               <path d={X_ICON} fill="currentColor" />
             </svg>
           </button>
+          {onRelocate && (
+            <button
+              class={styles.moveBadge}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onRelocate}
+              aria-label="Move to another page or collection"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d={MOVE_ICON} fill="currentColor" />
+              </svg>
+            </button>
+          )}
           {onOptions && (
             <button
               class={styles.optionsBadge}
