@@ -1,0 +1,79 @@
+/* Transient bottom-centre toast, used for undoable actions (remove a card,
+   move a card to another collection). */
+
+.host {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(28rem, 92vw);
+  padding: 12px 14px 12px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: calc(var(--fs-sm) * 1);
+  animation: toastIn 180ms ease-out;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .host {
+    animation: none;
+  }
+}
+
+.msg {
+  flex: 1;
+  min-width: 0;
+}
+
+.action {
+  flex: 0 0 auto;
+  /* comfortable target: this is the whole point of the toast */
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.dismiss {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-dim);
+  font-size: var(--fs-base);
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  color: var(--text);
+  background: var(--surface);
+}

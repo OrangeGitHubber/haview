@@ -1,9 +1,8 @@
-import { Modal } from '../../components/Modal';
-import { settings, updateElementOptions, removeElement } from '../../lib/settings';
+import { OptionsDialog, Section, Field, WideField } from '../../components/OptionsDialog';
+import { settings, updateElementOptions } from '../../lib/settings';
 import { useEntitiesByDomain } from '../../lib/ha/entities';
 import { friendlyName } from '../settings/EntitySelect';
 import { pageIcons } from '../../lib/icons';
-import { CardOpacityRow, CardTitleRow } from '../../elements/CardOpacityRow';
 import { TextSizeRow } from '../../elements/TextSizeRow';
 import { calendarColor } from './useCalendarEvents';
 import { DEFAULT_FONT_SCALE } from '../../lib/fontSizePresets';
@@ -30,8 +29,7 @@ export default function CalendarOptionsEditor({
   const mode = o.mode === 'agenda' ? 'agenda' : 'week';
   const fontScale = typeof o.fontScale === 'number' ? o.fontScale : DEFAULT_FONT_SCALE;
 
-  const set = (patch: Partial<CalendarOptions>) =>
-    updateElementOptions(pageId, element.id, patch);
+  const set = (patch: Partial<CalendarOptions>) => updateElementOptions(pageId, element.id, patch);
 
   const calMode: 'global' | 'all' | 'custom' =
     o.calendars === undefined ? 'global' : o.calendars === null ? 'all' : 'custom';
@@ -57,25 +55,211 @@ export default function CalendarOptionsEditor({
   };
 
   return (
-    <Modal onClose={onClose} maxWidth={420}>
-      <header class={opt.header}>
-        <span>Calendar settings</span>
-        <button class={opt.close} onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </header>
-      <div class={opt.form}>
-        <label class={opt.row}>
-          Title
+    <OptionsDialog
+      title="Calendar settings"
+      pageId={pageId}
+      element={element}
+      onClose={onClose}
+      maxWidth={460}
+    >
+      <Section title="Calendars">
+        <Field label="Show">
+          <div class={opt.seg}>
+            <button
+              class={`${opt.segBtn}${calMode === 'global' ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ calendars: undefined })}
+              title="This display's default calendar selection (all, unless configured before)"
+            >
+              Default
+            </button>
+            <button
+              class={`${opt.segBtn}${calMode === 'all' ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ calendars: null })}
+            >
+              All
+            </button>
+            <button
+              class={`${opt.segBtn}${calMode === 'custom' ? ` ${opt.segActive}` : ''}`}
+              onClick={startCustom}
+            >
+              Choose…
+            </button>
+          </div>
+        </Field>
+        {calMode === 'custom' && (
+          <ul class={opt.checklist}>
+            {calendarEntities.length === 0 && <li class={opt.dim}>No calendar entities found.</li>}
+            {calendarEntities.map((e) => (
+              <li key={e.entity_id}>
+                <label class={opt.checkItem}>
+                  <input
+                    type="checkbox"
+                    checked={Array.isArray(o.calendars) && o.calendars.includes(e.entity_id)}
+                    onChange={() => toggleCalendar(e.entity_id)}
+                  />
+                  <span
+                    class={styles.eventDot}
+                    style={{ background: calendarColor(e.entity_id) }}
+                  />
+                  {friendlyName(e)}
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section title="Layout">
+        <Field label="Show">
+          <div class={opt.seg}>
+            <button
+              class={`${opt.segBtn}${mode === 'week' ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ mode: 'week' })}
+            >
+              Day board
+            </button>
+            <button
+              class={`${opt.segBtn}${mode === 'agenda' ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ mode: 'agenda' })}
+            >
+              Next entries
+            </button>
+          </div>
+        </Field>
+
+        {mode === 'week' && (
+          <>
+            <Field label="Days">
+              <input
+                class={opt.num}
+                type="number"
+                min={1}
+                max={14}
+                value={o.days ?? 7}
+                aria-label="Days"
+                onChange={(e) => set({ days: num((e.target as HTMLInputElement).value, 1, 14, 7) })}
+              />
+            </Field>
+            <Field label="Direction">
+              <div class={opt.seg}>
+                <button
+                  class={`${opt.segBtn}${!o.vertical ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ vertical: false })}
+                >
+                  Columns
+                </button>
+                <button
+                  class={`${opt.segBtn}${o.vertical ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ vertical: true })}
+                >
+                  Stacked
+                </button>
+              </div>
+            </Field>
+          </>
+        )}
+
+        {mode === 'agenda' && (
+          <>
+            <Field label="Entries">
+              <input
+                class={opt.num}
+                type="number"
+                min={1}
+                max={20}
+                value={o.count ?? 5}
+                aria-label="Entries"
+                onChange={(e) => set({ count: num((e.target as HTMLInputElement).value, 1, 20, 5) })}
+              />
+            </Field>
+            <Field label="Card background">
+              <div class={opt.seg}>
+                <button
+                  class={`${opt.segBtn}${!o.agendaCard ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaCard: false })}
+                >
+                  None
+                </button>
+                <button
+                  class={`${opt.segBtn}${o.agendaCard ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaCard: true })}
+                >
+                  Surface
+                </button>
+              </div>
+            </Field>
+            <Field label="Entry spacing">
+              <div class={opt.seg}>
+                <button
+                  class={`${opt.segBtn}${!o.agendaFill ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaFill: false })}
+                >
+                  Compact
+                </button>
+                <button
+                  class={`${opt.segBtn}${o.agendaFill ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ agendaFill: true })}
+                >
+                  Fill height
+                </button>
+              </div>
+            </Field>
+            <p class={opt.dim}>
+              “Fill height” spreads entries over the whole card, which can look gappy on a tall
+              widget with few entries.
+            </p>
+          </>
+        )}
+      </Section>
+
+      <Section title="Display">
+        <WideField label="Card title">
           <input
             type="text"
             value={o.title ?? ''}
             placeholder={mode === 'agenda' ? 'Upcoming' : 'This week'}
             onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
           />
-        </label>
-
-        <div class={opt.row}>
+        </WideField>
+        <Field label="“Updated Xm ago” hint">
+          <div class={opt.seg}>
+            <button
+              class={`${opt.segBtn}${o.showUpdated !== false ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ showUpdated: undefined })}
+            >
+              Show
+            </button>
+            <button
+              class={`${opt.segBtn}${o.showUpdated === false ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ showUpdated: false })}
+            >
+              Hide
+            </button>
+          </div>
+        </Field>
+        <Field label="Calendar colour marker">
+          <div class={opt.seg}>
+            {(
+              [
+                ['hide', 'Hide'],
+                ['dot', 'Dots'],
+                ['bar', 'Bar'],
+              ] as const
+            ).map(([val, label]) => {
+              const cur = o.marker ?? (o.showDots === false ? 'hide' : 'dot');
+              return (
+                <button
+                  key={val}
+                  class={`${opt.segBtn}${cur === val ? ` ${opt.segActive}` : ''}`}
+                  onClick={() => set({ marker: val, showDots: undefined })}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+        <div class={opt.fieldWide}>
           Icon
           <div class={opt.iconRow}>
             <button
@@ -98,229 +282,8 @@ export default function CalendarOptionsEditor({
             ))}
           </div>
         </div>
-
-        <div class={opt.row}>
-          Show
-          <div class={opt.seg}>
-            <button
-              class={`${opt.segBtn}${mode === 'week' ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ mode: 'week' })}
-            >
-              Day board
-            </button>
-            <button
-              class={`${opt.segBtn}${mode === 'agenda' ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ mode: 'agenda' })}
-            >
-              Next entries
-            </button>
-          </div>
-        </div>
-
-        {mode === 'week' && (
-          <>
-            <label class={opt.row}>
-              Days
-              <input
-                class={opt.num}
-                type="number"
-                min={1}
-                max={14}
-                value={o.days ?? 7}
-                onChange={(e) =>
-                  set({ days: num((e.target as HTMLInputElement).value, 1, 14, 7) })
-                }
-              />
-            </label>
-            <div class={opt.row}>
-              Layout
-              <div class={opt.seg}>
-                <button
-                  class={`${opt.segBtn}${!o.vertical ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ vertical: false })}
-                >
-                  Columns
-                </button>
-                <button
-                  class={`${opt.segBtn}${o.vertical ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ vertical: true })}
-                >
-                  Stacked
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {mode === 'agenda' && (
-          <>
-            <label class={opt.row}>
-              Entries
-              <input
-                class={opt.num}
-                type="number"
-                min={1}
-                max={20}
-                value={o.count ?? 5}
-                onChange={(e) =>
-                  set({ count: num((e.target as HTMLInputElement).value, 1, 20, 5) })
-                }
-              />
-            </label>
-            <div class={opt.row}>
-              Card background
-              <div class={opt.seg}>
-                <button
-                  class={`${opt.segBtn}${!o.agendaCard ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ agendaCard: false })}
-                >
-                  None
-                </button>
-                <button
-                  class={`${opt.segBtn}${o.agendaCard ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ agendaCard: true })}
-                >
-                  Surface
-                </button>
-              </div>
-              <span class={opt.dim}>
-                “Surface” draws a bordered card that follows the card-opacity setting; “None” lets
-                entries use the full space.
-              </span>
-            </div>
-            <div class={opt.row}>
-              Entry spacing
-              <div class={opt.seg}>
-                <button
-                  class={`${opt.segBtn}${!o.agendaFill ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ agendaFill: false })}
-                >
-                  Compact
-                </button>
-                <button
-                  class={`${opt.segBtn}${o.agendaFill ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ agendaFill: true })}
-                >
-                  Fill height
-                </button>
-              </div>
-              <span class={opt.dim}>
-                “Compact” keeps entries close together; “Fill height” spreads them out to use the
-                whole card, which can look gappy on a tall widget with few entries.
-              </span>
-            </div>
-          </>
-        )}
-
-        <div class={opt.row}>
-          Calendars
-          <div class={opt.seg}>
-            <button
-              class={`${opt.segBtn}${calMode === 'global' ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ calendars: undefined })}
-              title="This display's default calendar selection (all, unless configured before)"
-            >
-              Default
-            </button>
-            <button
-              class={`${opt.segBtn}${calMode === 'all' ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ calendars: null })}
-            >
-              All
-            </button>
-            <button
-              class={`${opt.segBtn}${calMode === 'custom' ? ` ${opt.segActive}` : ''}`}
-              onClick={startCustom}
-            >
-              Choose…
-            </button>
-          </div>
-        </div>
-
-        {calMode === 'custom' && (
-          <ul class={opt.checklist}>
-            {calendarEntities.length === 0 && (
-              <li class={opt.dim}>No calendar entities found.</li>
-            )}
-            {calendarEntities.map((e) => (
-              <li key={e.entity_id}>
-                <label class={opt.checkItem}>
-                  <input
-                    type="checkbox"
-                    checked={Array.isArray(o.calendars) && o.calendars.includes(e.entity_id)}
-                    onChange={() => toggleCalendar(e.entity_id)}
-                  />
-                  <span
-                    class={styles.eventDot}
-                    style={{ background: calendarColor(e.entity_id) }}
-                  />
-                  {friendlyName(e)}
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <div class={opt.row}>
-          “Updated Xm ago” hint
-          <div class={opt.seg}>
-            <button
-              class={`${opt.segBtn}${o.showUpdated !== false ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ showUpdated: undefined })}
-            >
-              Show
-            </button>
-            <button
-              class={`${opt.segBtn}${o.showUpdated === false ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ showUpdated: false })}
-            >
-              Hide
-            </button>
-          </div>
-        </div>
-
-        <div class={opt.row}>
-          Calendar color marker on entries
-          <div class={opt.seg}>
-            {(
-              [
-                ['hide', 'Hide'],
-                ['dot', 'Dots'],
-                ['bar', 'Bar'],
-              ] as const
-            ).map(([val, label]) => {
-              const cur = o.marker ?? (o.showDots === false ? 'hide' : 'dot');
-              return (
-                <button
-                  key={val}
-                  class={`${opt.segBtn}${cur === val ? ` ${opt.segActive}` : ''}`}
-                  onClick={() => set({ marker: val, showDots: undefined })}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
-        <CardTitleRow pageId={pageId} element={element} />
-        <CardOpacityRow pageId={pageId} element={element} />
-        <div class={opt.footerRow}>
-          <button
-            class={opt.removeBtn}
-            onClick={() => {
-              removeElement(pageId, element.id);
-              onClose();
-            }}
-          >
-            Remove element
-          </button>
-          <button class={opt.doneBtn} onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </Modal>
+      </Section>
+    </OptionsDialog>
   );
 }

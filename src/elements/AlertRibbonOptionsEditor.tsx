@@ -1,7 +1,7 @@
-import { Modal } from '../components/Modal';
-import { updateElementOptions, removeElement, newId } from '../lib/settings';
+import { useState } from 'preact/hooks';
+import { OptionsDialog, Section, WideField } from '../components/OptionsDialog';
+import { updateElementOptions, newId } from '../lib/settings';
 import { EntityPicker } from '../grid/EntityPicker';
-import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
 import { TextSizeRow } from './TextSizeRow';
 import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
@@ -25,6 +25,7 @@ export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: E
   const o = (element.options ?? {}) as AlertRibbonOptions;
   const items = Array.isArray(o.items) ? o.items : [];
   const fontScale = typeof o.fontScale === 'number' ? o.fontScale : DEFAULT_FONT_SCALE;
+  const [adding, setAdding] = useState(items.length === 0);
 
   const set = (patch: Partial<AlertRibbonOptions>) =>
     updateElementOptions(pageId, element.id, patch);
@@ -41,87 +42,95 @@ export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: E
   };
 
   return (
-    <Modal onClose={onClose} maxWidth={540}>
-      <header class={opt.header}>
-        <span>Alert ribbon settings</span>
-        <button class={opt.close} onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </header>
-      <div class={opt.form}>
-        <label class={opt.row}>
-          Title
-          <input
-            type="text"
-            value={o.title ?? ''}
-            placeholder="Alerts"
-            onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
-          />
-        </label>
-
+    <OptionsDialog
+      title="Alert ribbon settings"
+      pageId={pageId}
+      element={element}
+      onClose={onClose}
+      maxWidth={560}
+    >
+      <Section title="Rules">
+        <p class={opt.dim}>
+          Each card shows only while its condition holds; the order here is the ribbon order.
+        </p>
         {items.length > 0 && (
-          <div class={opt.row}>
-            Rules — each card shows only while its condition holds; order = ribbon order
-            <ul class={opt.checklist}>
-              {items.map((it, i) => (
-                <li key={it.id} class={opt.checkItem} style={{ cursor: 'default' }}>
-                  <span class={opt.checkName} title={it.entityId}>
-                    {it.entityId}
-                  </span>
-                  <select
-                    value={it.op}
-                    onChange={(e) =>
-                      patchItem(it.id, { op: (e.target as HTMLSelectElement).value as AlertOp })
+          <ul class={opt.checklist}>
+            {items.map((it, i) => (
+              <li key={it.id} class={opt.checkItem} style={{ cursor: 'default' }}>
+                <span class={opt.checkName} title={it.entityId}>
+                  {it.entityId}
+                </span>
+                <select
+                  value={it.op}
+                  aria-label={`Condition for ${it.entityId}`}
+                  onChange={(e) =>
+                    patchItem(it.id, { op: (e.target as HTMLSelectElement).value as AlertOp })
+                  }
+                >
+                  {OPS.map((op) => (
+                    <option key={op.op} value={op.op}>
+                      {op.label}
+                    </option>
+                  ))}
+                </select>
+                {needsValue(it.op) && (
+                  <input
+                    type="text"
+                    style={{ width: '72px' }}
+                    value={it.value ?? ''}
+                    placeholder="value"
+                    aria-label={`Value for ${it.entityId}`}
+                    onInput={(e) =>
+                      patchItem(it.id, { value: (e.target as HTMLInputElement).value })
                     }
-                  >
-                    {OPS.map((op) => (
-                      <option key={op.op} value={op.op}>
-                        {op.label}
-                      </option>
-                    ))}
-                  </select>
-                  {needsValue(it.op) && (
-                    <input
-                      type="text"
-                      style={{ width: '72px' }}
-                      value={it.value ?? ''}
-                      placeholder="value"
-                      onInput={(e) =>
-                        patchItem(it.id, { value: (e.target as HTMLInputElement).value })
-                      }
-                    />
-                  )}
-                  <button
-                    class={opt.close}
-                    onClick={() => moveItem(it.id, -1)}
-                    disabled={i === 0}
-                    aria-label="Move left"
-                  >
-                    ◀
-                  </button>
-                  <button
-                    class={opt.close}
-                    onClick={() => moveItem(it.id, 1)}
-                    disabled={i === items.length - 1}
-                    aria-label="Move right"
-                  >
-                    ▶
-                  </button>
-                  <button
-                    class={opt.close}
-                    onClick={() => setItems(items.filter((x) => x.id !== it.id))}
-                    aria-label={`Remove rule for ${it.entityId}`}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+                  />
+                )}
+                <button
+                  class={opt.close}
+                  onClick={() => moveItem(it.id, -1)}
+                  disabled={i === 0}
+                  aria-label={`Move ${it.entityId} left`}
+                >
+                  ◀
+                </button>
+                <button
+                  class={opt.close}
+                  onClick={() => moveItem(it.id, 1)}
+                  disabled={i === items.length - 1}
+                  aria-label={`Move ${it.entityId} right`}
+                >
+                  ▶
+                </button>
+                <button
+                  class={opt.close}
+                  onClick={() => setItems(items.filter((x) => x.id !== it.id))}
+                  aria-label={`Remove rule for ${it.entityId}`}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
+        <div class={opt.summary}>
+          <span class={opt.summaryText}>
+            <span class={opt.summaryName}>
+              {items.length} rule{items.length === 1 ? '' : 's'}
+            </span>
+          </span>
+          <button class={opt.segBtn} aria-expanded={adding} onClick={() => setAdding(!adding)}>
+            {adding ? 'Done' : 'Add a device…'}
+          </button>
+        </div>
+        {adding && (
+          <EntityPicker
+            onPick={(entityId) => setItems([...items, { id: newId('a'), entityId, op: 'on' }])}
+          />
+        )}
+      </Section>
 
-        <label class={opt.row}>
-          Card width · {alertCardSize(o).w}px
+      <Section title="Display">
+        <WideField label={`Card width · ${alertCardSize(o).w}px`}>
           <input
             type="range"
             min={120}
@@ -130,9 +139,8 @@ export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: E
             value={alertCardSize(o).w}
             onInput={(e) => set({ cardWidth: Number((e.target as HTMLInputElement).value) })}
           />
-        </label>
-        <label class={opt.row}>
-          Card height · {alertCardSize(o).h}px
+        </WideField>
+        <WideField label={`Card height · ${alertCardSize(o).h}px`}>
           <input
             type="range"
             min={56}
@@ -141,35 +149,17 @@ export default function AlertRibbonOptionsEditor({ pageId, element, onClose }: E
             value={alertCardSize(o).h}
             onInput={(e) => set({ cardHeight: Number((e.target as HTMLInputElement).value) })}
           />
-        </label>
-
-        <div class={opt.row}>
-          Add a device — pick it, then set its “display if…” condition above
-          <EntityPicker
-            onPick={(entityId) =>
-              setItems([...items, { id: newId('a'), entityId, op: 'on' }])
-            }
+        </WideField>
+        <WideField label="Card title">
+          <input
+            type="text"
+            value={o.title ?? ''}
+            placeholder="Alerts"
+            onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
           />
-        </div>
-
+        </WideField>
         <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
-        <CardTitleRow pageId={pageId} element={element} />
-        <CardOpacityRow pageId={pageId} element={element} />
-        <div class={opt.footerRow}>
-          <button
-            class={opt.removeBtn}
-            onClick={() => {
-              removeElement(pageId, element.id);
-              onClose();
-            }}
-          >
-            Remove element
-          </button>
-          <button class={opt.doneBtn} onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </Modal>
+      </Section>
+    </OptionsDialog>
   );
 }

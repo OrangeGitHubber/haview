@@ -1,6 +1,5 @@
-import { Modal } from '../components/Modal';
-import { updateElementOptions, removeElement } from '../lib/settings';
-import { CardOpacityRow } from './CardOpacityRow';
+import { OptionsDialog, Section, Field, OverrideRow } from '../components/OptionsDialog';
+import { updateElementOptions } from '../lib/settings';
 import { TextSizeRow } from './TextSizeRow';
 import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
@@ -32,16 +31,17 @@ export default function ClockOptionsEditor({ pageId, element, onClose }: EditorP
   const set = (patch: Partial<ClockOptions>) => updateElementOptions(pageId, element.id, patch);
 
   return (
-    <Modal onClose={onClose} maxWidth={380}>
-      <header class={opt.header}>
-        <span>Clock settings</span>
-        <button class={opt.close} onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </header>
-      <div class={opt.form}>
-        <div class={opt.row}>
-          Size
+    <OptionsDialog
+      title="Clock settings"
+      pageId={pageId}
+      element={element}
+      onClose={onClose}
+      maxWidth={420}
+      // the clock draws no card title, so those overrides would do nothing
+      withTitleOverride={false}
+    >
+      <Section title="Display">
+        <Field label="Size">
           <div class={opt.seg}>
             {SIZES.map((sz) => (
               <button
@@ -53,50 +53,39 @@ export default function ClockOptionsEditor({ pageId, element, onClose }: EditorP
               </button>
             ))}
           </div>
-        </div>
+        </Field>
         <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
-        <div class={opt.row}>
-          Color
+        <OverrideRow
+          label="Colour"
+          overridden={!!o.color}
+          value={o.color}
+          onOverride={() => set({ color: '#f2ede8' })}
+          onReset={() => set({ color: undefined })}
+        >
+          <input
+            type="color"
+            value={o.color ?? '#f2ede8'}
+            aria-label="Clock colour"
+            onInput={(e) => set({ color: (e.target as HTMLInputElement).value })}
+          />
+        </OverrideRow>
+        <Field label="Show on phones">
           <div class={opt.seg}>
-            <input
-              type="color"
-              value={o.color ?? '#f2ede8'}
-              onChange={(e) => set({ color: (e.target as HTMLInputElement).value })}
-            />
             <button
-              class={`${opt.segBtn}${!o.color ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ color: undefined })}
+              class={`${opt.segBtn}${o.hideOnMobile === false ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ hideOnMobile: false })}
             >
-              Theme default
+              Show
+            </button>
+            <button
+              class={`${opt.segBtn}${o.hideOnMobile !== false ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ hideOnMobile: true })}
+            >
+              Hide
             </button>
           </div>
-        </div>
-        <label class={opt.checkItem}>
-          <input
-            type="checkbox"
-            checked={o.hideOnMobile === false}
-            onChange={(e) =>
-              set({ hideOnMobile: (e.target as HTMLInputElement).checked ? false : true })
-            }
-          />
-          Show on phones (hidden by default)
-        </label>
-        <CardOpacityRow pageId={pageId} element={element} />
-        <div class={opt.footerRow}>
-          <button
-            class={opt.removeBtn}
-            onClick={() => {
-              removeElement(pageId, element.id);
-              onClose();
-            }}
-          >
-            Remove element
-          </button>
-          <button class={opt.doneBtn} onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </Modal>
+        </Field>
+      </Section>
+    </OptionsDialog>
   );
 }

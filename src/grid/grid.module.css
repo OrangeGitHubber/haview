@@ -598,6 +598,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 44px;
   padding: 8px 12px;
   background: none;
   border: none;
@@ -608,6 +609,25 @@
 
 .pickRow:hover {
   background: var(--surface-2);
+}
+
+/* the entity this card already shows — without it the picker gave no clue
+   what was selected, and the only hint was the raw id above the list */
+.pickRowActive {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.pickRowActive .rowIcon,
+.pickRowActive .entityId {
+  color: var(--accent);
+}
+
+.pickRowActive::after {
+  content: '✓';
+  margin-left: auto;
+  padding-left: 8px;
+  flex: 0 0 auto;
 }
 
 .rowIcon {

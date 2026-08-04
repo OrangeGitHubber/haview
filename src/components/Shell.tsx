@@ -9,6 +9,7 @@ import { StatusBanner } from './StatusBanner';
 import { AsyncView } from './AsyncView';
 import { Screensaver } from './Screensaver';
 import { IdleDebugOverlay } from './IdleDebugOverlay';
+import { ToastHost } from './Toast';
 
 const gridPageLoader = () => import('../grid/GridPage');
 
@@ -88,6 +89,7 @@ export function Shell() {
         />
       )}
       {s.idleDebug && <IdleDebugOverlay nightActive={nightDim || showSaver} />}
+      <ToastHost />
     </div>
   );
 }

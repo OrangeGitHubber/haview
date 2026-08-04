@@ -1,4 +1,6 @@
-/* Shared styles for per-element options editors (gear badge in edit mode). */
+/* Shared styles for per-element options editors (gear badge in edit mode).
+   Sizes come from the --fs-* token scale rather than the ad-hoc rem literals
+   that used to live here, so dialog chrome tracks the global Display scale. */
 
 .header {
   display: flex;
@@ -6,23 +8,34 @@
   justify-content: space-between;
   gap: 10px;
   padding: 12px 10px 12px 18px;
-  font-weight: 650;
+  font-weight: 600;
+  font-size: var(--fs-title);
   border-bottom: 1px solid var(--border);
 }
 
 .close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   background: none;
   border: none;
   border-radius: var(--radius-sm);
   color: var(--text-dim);
-  font-size: 1.05rem;
+  font-size: var(--fs-base);
   cursor: pointer;
-  padding: 6px 10px;
+  padding: 0 10px;
 }
 
 .close:hover {
   color: var(--text);
   background: var(--surface-2);
+}
+
+.close:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .form {
@@ -31,33 +44,104 @@
   gap: 14px;
 }
 
+/* every interactive control in a dialog gets the same ring — this is the one
+   flow where a keyboard is actually used (typing a URL/token, setup) */
+.form :focus-visible,
+.header :focus-visible,
+.footerRow :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- sections & groups ---------- */
+
+.sec {
+  display: grid;
+  gap: 6px;
+}
+
+.secTitle {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.group {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+/* a label + its control on one line; wraps when the control needs the room */
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 44px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+.fieldLabel {
+  flex: 0 1 auto;
+}
+
+.fieldCtl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* a field whose control needs the full width (sliders, text inputs) */
+.fieldWide {
+  display: grid;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+/* ---------- legacy row (type-specific fields still use this) ---------- */
+
 .row {
   display: grid;
   gap: 6px;
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
 }
 
 .row input[type='text'],
-.row input[type='search'] {
-  padding: 9px 12px;
+.row input[type='search'],
+.field input[type='text'],
+.fieldWide input[type='text'] {
+  min-height: 44px;
+  padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
+  font: inherit;
 }
 
-.row input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
-.row input[type='range'] {
+.row input[type='range'],
+.field input[type='range'],
+.fieldWide input[type='range'] {
   accent-color: var(--accent);
 }
 
-.row select {
-  padding: 9px 12px;
+.row select,
+.field select,
+.fieldWide select {
+  min-height: 44px;
+  padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
@@ -68,27 +152,45 @@
 
 .num {
   width: 90px;
-  padding: 9px 12px;
+  min-height: 44px;
+  padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
+  font: inherit;
 }
 
 .seg {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .segBtn {
-  padding: 7px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: none;
   color: var(--text-dim);
   cursor: pointer;
-  font-size: 0.8rem;
+  font: inherit;
+  font-size: var(--fs-xs);
+}
+
+.segBtn:hover {
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
+.segBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .segActive {
@@ -96,6 +198,187 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* selection must not be colour-only (a glance-legibility and a11y rule) */
+.segActive::before {
+  content: '✓';
+  margin-right: 6px;
+  font-size: 0.9em;
+}
+
+/* ---------- override rows (System vs Custom) ---------- */
+
+/*
+ * One grammar for every "follow the global setting, or override it here"
+ * control. Previously title-visibility, title-colour and card-opacity each
+ * invented their own shape; they all use this now.
+ */
+.ovRow {
+  display: grid;
+  gap: 8px;
+}
+
+.ovHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+.ovChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.ovChip:hover {
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
+.ovChipOn {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ovBody {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-left: 2px;
+}
+
+.reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-3);
+  font-size: var(--fs-base);
+  cursor: pointer;
+}
+
+.reset:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* ---------- disclosure (collapsed Appearance section) ---------- */
+
+.disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.disclosure:hover {
+  background: color-mix(in srgb, var(--surface-2) 70%, var(--border));
+}
+
+.disclosureState {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+
+.caret {
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--text-3);
+  transition: transform 150ms ease-out;
+}
+
+.caretOpen {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    transition: none;
+  }
+}
+
+/* ---------- entity summary (replaces the always-open picker) ---------- */
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.summaryText {
+  min-width: 0;
+}
+
+.summaryName {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summaryId {
+  font-size: var(--fs-2xs);
+  font-family: ui-monospace, monospace;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- preview ---------- */
+
+.preview {
+  display: grid;
+  place-items: stretch;
+  min-height: 96px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  /* look, don't touch: the preview renders the real live card, and a stray
+     tap on it would toggle the actual device */
+  pointer-events: none;
+}
+
+.previewNote {
+  margin-top: 6px;
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+/* ---------- lists ---------- */
 
 .checklist {
   list-style: none;
@@ -109,10 +392,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 6px;
+  min-height: 44px;
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   min-width: 0;
+  font-size: var(--fs-sm);
 }
 
 .checkItem:hover {
@@ -121,8 +406,8 @@
 
 .checkItem input {
   accent-color: var(--accent);
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
   flex: 0 0 auto;
 }
 
@@ -136,7 +421,7 @@
 
 .checkId {
   color: var(--text-dim);
-  font-size: 0.72rem;
+  font-size: var(--fs-2xs);
   font-family: ui-monospace, monospace;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -146,16 +431,16 @@
 
 .dim {
   color: var(--text-dim);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 .warn {
-  color: #e7d3a6;
+  color: var(--yellow);
   background: color-mix(in srgb, var(--yellow) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--yellow) 32%, transparent);
   border-radius: var(--radius-sm);
   padding: 9px 11px;
-  font-size: 0.82rem;
+  font-size: var(--fs-xs);
 }
 
 /* a text-link-style button for secondary actions ("…or link an existing page") */
@@ -163,10 +448,11 @@
   justify-self: start;
   background: none;
   border: none;
-  padding: 2px 0;
+  min-height: 44px;
+  padding: 0;
   color: var(--accent);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   cursor: pointer;
 }
@@ -175,10 +461,42 @@
   text-decoration: underline;
 }
 
+/* ---------- danger zone + footer ---------- */
+
+/*
+ * Remove used to sit in the sticky footer, one click away and directly beside
+ * the primary. It's now the last thing in the scroll, visually separated, and
+ * undoable via a toast.
+ */
+.dangerRow {
+  display: flex;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.dangerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px 0 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--red);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.dangerBtn:hover {
+  text-decoration: underline;
+}
+
 .footerRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   /* always visible: stick to the bottom of the scrolling modal panel */
   position: sticky;
@@ -189,18 +507,42 @@
   border-top: 1px solid var(--border);
 }
 
-.doneBtn {
-  padding: 10px 26px;
-  border: none;
+/*
+ * Neutral, not a green CTA: everything in these dialogs saves on change, so
+ * this closes the dialog — it doesn't submit anything.
+ */
+.closeBtn {
+  min-height: 44px;
+  padding: 0 26px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--green);
-  color: #0c1f12;
-  font-weight: 650;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.doneBtn:hover {
-  filter: brightness(1.1);
+.closeBtn:hover {
+  border-color: var(--text-3);
+}
+
+/* accent action used inside a dialog body (e.g. "Open collection →") */
+.goBtn {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.goBtn:hover {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .iconRow {
@@ -210,8 +552,8 @@
 }
 
 .iconBtn {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid var(--border);
@@ -220,7 +562,8 @@
   color: var(--text-dim);
   cursor: pointer;
   padding: 0;
-  font-size: 0.7rem;
+  font: inherit;
+  font-size: var(--fs-2xs);
 }
 
 .iconBtn svg {
@@ -237,19 +580,4 @@
   background: var(--accent-dim);
   border-color: var(--accent);
   color: var(--accent);
-}
-
-.removeBtn {
-  justify-self: start;
-  padding: 9px 18px;
-  border: 1px solid color-mix(in srgb, var(--red) 55%, transparent);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--red) 12%, transparent);
-  color: var(--red);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.removeBtn:hover {
-  background: color-mix(in srgb, var(--red) 22%, transparent);
 }

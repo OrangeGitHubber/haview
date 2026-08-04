@@ -471,8 +471,8 @@ export default function GridPage({
             )}
 
             <div class={opt.footerRow}>
-              <button class={opt.doneBtn} onClick={() => setBgOpen(false)}>
-                Done
+              <button class={opt.closeBtn} onClick={() => setBgOpen(false)}>
+                Close
               </button>
             </div>
           </div>

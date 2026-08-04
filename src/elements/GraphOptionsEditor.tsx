@@ -1,8 +1,7 @@
-import { Modal } from '../components/Modal';
-import { updateElementOptions, removeElement } from '../lib/settings';
-import { EntityPicker } from '../grid/EntityPicker';
+import { OptionsDialog, Section, Field, WideField } from '../components/OptionsDialog';
+import { updateElementOptions } from '../lib/settings';
 import { MdiIcon } from '../components/MdiIcon';
-import { CardOpacityRow, CardTitleRow } from './CardOpacityRow';
+import { EntityChooser } from './EntityChooser';
 import { TextSizeRow } from './TextSizeRow';
 import { DEFAULT_FONT_SCALE } from '../lib/fontSizePresets';
 import type { EditorProps } from './domainOptionsEditor';
@@ -41,26 +40,24 @@ export default function GraphOptionsEditor({ pageId, element, onClose }: EditorP
   const set = (patch: Partial<GraphOptions>) => updateElementOptions(pageId, element.id, patch);
 
   return (
-    <Modal onClose={onClose} maxWidth={520}>
-      <header class={opt.header}>
-        <span>History graph settings</span>
-        <button class={opt.close} onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </header>
-      <div class={opt.form}>
-        <p class={opt.dim}>
-          Showing <code>{o.entityId ?? 'no sensor yet'}</code>
-        </p>
-        <div class={opt.row}>
-          Sensor
-          <EntityPicker
-            onPick={(entityId) => set({ entityId })}
-            filter={(en) => en.entity_id.startsWith('sensor.')}
-          />
-        </div>
-        <div class={opt.row}>
-          Layout
+    <OptionsDialog
+      title="History graph settings"
+      pageId={pageId}
+      element={element}
+      onClose={onClose}
+      maxWidth={480}
+    >
+      <Section title="Sensor">
+        <EntityChooser
+          current={o.entityId ?? ''}
+          filter={(en) => en.entity_id.startsWith('sensor.')}
+          onPick={(entityId) => set({ entityId })}
+          emptyLabel="No sensor selected"
+        />
+      </Section>
+
+      <Section title="Display">
+        <Field label="Layout">
           <div class={opt.seg}>
             <button
               class={`${opt.segBtn}${o.layout !== 'tile' ? ` ${opt.segActive}` : ''}`}
@@ -75,9 +72,22 @@ export default function GraphOptionsEditor({ pageId, element, onClose }: EditorP
               Compact tile
             </button>
           </div>
-        </div>
+        </Field>
+        <Field label="Window">
+          <div class={opt.seg}>
+            {WINDOWS.map((w) => (
+              <button
+                key={w.hours}
+                class={`${opt.segBtn}${(o.hours ?? 24) === w.hours ? ` ${opt.segActive}` : ''}`}
+                onClick={() => set({ hours: w.hours })}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+        </Field>
         {o.layout === 'tile' && (
-          <div class={opt.row}>
+          <div class={opt.fieldWide}>
             Tile icon
             <div class={opt.iconRow}>
               <button
@@ -99,47 +109,16 @@ export default function GraphOptionsEditor({ pageId, element, onClose }: EditorP
             </div>
           </div>
         )}
-        <div class={opt.row}>
-          Window
-          <div class={opt.seg}>
-            {WINDOWS.map((w) => (
-              <button
-                key={w.hours}
-                class={`${opt.segBtn}${(o.hours ?? 24) === w.hours ? ` ${opt.segActive}` : ''}`}
-                onClick={() => set({ hours: w.hours })}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <label class={opt.row}>
-          Title (a friendly name for ugly sensor names)
+        <WideField label="Name (for ugly sensor names)">
           <input
             type="text"
             value={o.title ?? ''}
             placeholder="Uses the sensor's name if empty"
             onInput={(e) => set({ title: (e.target as HTMLInputElement).value })}
           />
-        </label>
+        </WideField>
         <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
-        <CardTitleRow pageId={pageId} element={element} />
-        <CardOpacityRow pageId={pageId} element={element} />
-        <div class={opt.footerRow}>
-          <button
-            class={opt.removeBtn}
-            onClick={() => {
-              removeElement(pageId, element.id);
-              onClose();
-            }}
-          >
-            Remove element
-          </button>
-          <button class={opt.doneBtn} onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </Modal>
+      </Section>
+    </OptionsDialog>
   );
 }

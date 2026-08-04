@@ -1,8 +1,7 @@
-import { Modal } from '../../../components/Modal';
-import { settings, updateElementOptions, removeElement } from '../../../lib/settings';
+import { OptionsDialog, Section, Field, WideField } from '../../../components/OptionsDialog';
+import { settings, updateElementOptions } from '../../../lib/settings';
 import { useEntitiesByDomain } from '../../../lib/ha/entities';
 import { friendlyName } from '../../settings/EntitySelect';
-import { CardOpacityRow, CardTitleRow } from '../../../elements/CardOpacityRow';
 import { TextSizeRow } from '../../../elements/TextSizeRow';
 import { DEFAULT_FONT_SCALE } from '../../../lib/fontSizePresets';
 import type { GridElement } from '../../../grid/types';
@@ -27,8 +26,7 @@ export default function PresenceOptionsEditor({
   // companion-app "Geocoded Location" sensors — their state is the address
   const geocodeSensors = sensors.filter((s) => s.entity_id.includes('geocoded'));
 
-  const set = (patch: Partial<PresenceOptions>) =>
-    updateElementOptions(pageId, element.id, patch);
+  const set = (patch: Partial<PresenceOptions>) => updateElementOptions(pageId, element.id, patch);
 
   const personMode: 'global' | 'all' | 'custom' =
     o.persons === undefined ? 'global' : o.persons === null ? 'all' : 'custom';
@@ -58,34 +56,15 @@ export default function PresenceOptionsEditor({
   };
 
   return (
-    <Modal onClose={onClose} maxWidth={440}>
-      <header class={opt.header}>
-        <span>Family presence settings</span>
-        <button class={opt.close} onClick={onClose} aria-label="Close">
-          ✕
-        </button>
-      </header>
-      <div class={opt.form}>
-        <div class={opt.row}>
-          Layout
-          <div class={opt.seg}>
-            <button
-              class={`${opt.segBtn}${!o.horizontal ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ horizontal: false })}
-            >
-              Stacked
-            </button>
-            <button
-              class={`${opt.segBtn}${o.horizontal ? ` ${opt.segActive}` : ''}`}
-              onClick={() => set({ horizontal: true })}
-            >
-              Horizontal
-            </button>
-          </div>
-        </div>
-
-        <div class={opt.row}>
-          People
+    <OptionsDialog
+      title="Family presence settings"
+      pageId={pageId}
+      element={element}
+      onClose={onClose}
+      maxWidth={460}
+    >
+      <Section title="People">
+        <Field label="Show">
           <div class={opt.seg}>
             <button
               class={`${opt.segBtn}${personMode === 'global' ? ` ${opt.segActive}` : ''}`}
@@ -107,8 +86,7 @@ export default function PresenceOptionsEditor({
               Choose…
             </button>
           </div>
-        </div>
-
+        </Field>
         {personMode === 'custom' && (
           <ul class={opt.checklist}>
             {people.map((p) => (
@@ -125,9 +103,26 @@ export default function PresenceOptionsEditor({
             ))}
           </ul>
         )}
+      </Section>
 
-        <div class={opt.row}>
-          Last update time
+      <Section title="Display">
+        <Field label="Layout">
+          <div class={opt.seg}>
+            <button
+              class={`${opt.segBtn}${!o.horizontal ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ horizontal: false })}
+            >
+              Stacked
+            </button>
+            <button
+              class={`${opt.segBtn}${o.horizontal ? ` ${opt.segActive}` : ''}`}
+              onClick={() => set({ horizontal: true })}
+            >
+              Horizontal
+            </button>
+          </div>
+        </Field>
+        <Field label="Last update time">
           <div class={opt.seg}>
             <button
               class={`${opt.segBtn}${!o.showLastSeen ? ` ${opt.segActive}` : ''}`}
@@ -142,39 +137,40 @@ export default function PresenceOptionsEditor({
               Show
             </button>
           </div>
-        </div>
+        </Field>
+        <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
+      </Section>
 
-        <div class={opt.row}>
-          Driving detection
-          <span class={opt.dim}>
-            Pick each person's phone activity sensor; automotive states show a car badge.
-          </span>
-        </div>
-        {shown.map((p) => (
-          <label key={p.entity_id} class={opt.row}>
-            {friendlyName(p)}
-            <select
-              value={o.activity?.[p.entity_id] ?? ''}
-              onChange={(e) => setActivity(p.entity_id, (e.target as HTMLSelectElement).value)}
-            >
-              <option value="">None</option>
-              {activitySensors.map((s) => (
-                <option key={s.entity_id} value={s.entity_id}>
-                  {friendlyName(s)}
-                </option>
-              ))}
-            </select>
-          </label>
-        ))}
-        {activitySensors.length === 0 && (
+      <Section title="Driving detection">
+        <p class={opt.dim}>
+          Pick each person's phone activity sensor; automotive states show a car badge.
+        </p>
+        {activitySensors.length === 0 ? (
           <p class={opt.dim}>
-            No activity sensors found (entity ids containing “activity”). Enable the Activity
-            sensor in the HA companion app.
+            No activity sensors found (entity ids containing “activity”). Enable the Activity sensor
+            in the HA companion app.
           </p>
+        ) : (
+          shown.map((p) => (
+            <WideField key={p.entity_id} label={friendlyName(p)}>
+              <select
+                value={o.activity?.[p.entity_id] ?? ''}
+                onChange={(e) => setActivity(p.entity_id, (e.target as HTMLSelectElement).value)}
+              >
+                <option value="">None</option>
+                {activitySensors.map((s) => (
+                  <option key={s.entity_id} value={s.entity_id}>
+                    {friendlyName(s)}
+                  </option>
+                ))}
+              </select>
+            </WideField>
+          ))
         )}
+      </Section>
 
-        <div class={opt.row}>
-          Street address when away
+      <Section title="Street address when away">
+        <Field label="Address">
           <div class={opt.seg}>
             <button
               class={`${opt.segBtn}${!o.showAddress ? ` ${opt.segActive}` : ''}`}
@@ -189,15 +185,21 @@ export default function PresenceOptionsEditor({
               Show
             </button>
           </div>
-          <span class={opt.dim}>
-            Uses each person's “Geocoded Location” sensor from the HA companion app; the address
-            shows on the card (and the map) when they're not in a known zone.
-          </span>
-        </div>
+        </Field>
+        <p class={opt.dim}>
+          Uses each person's “Geocoded Location” sensor from the HA companion app; the address shows
+          on the card (and the map) when they're not in a known zone.
+        </p>
+        {o.showAddress && geocodeSensors.length === 0 && (
+          <p class={opt.dim}>
+            No geocoded-location sensors found (entity ids containing “geocoded”). Enable the
+            Geocoded Location sensor in the HA companion app.
+          </p>
+        )}
         {o.showAddress &&
+          geocodeSensors.length > 0 &&
           shown.map((p) => (
-            <label key={`geo-${p.entity_id}`} class={opt.row}>
-              {friendlyName(p)} — location sensor
+            <WideField key={`geo-${p.entity_id}`} label={`${friendlyName(p)} — location sensor`}>
               <select
                 value={o.geocode?.[p.entity_id] ?? ''}
                 onChange={(e) => setGeocode(p.entity_id, (e.target as HTMLSelectElement).value)}
@@ -209,33 +211,9 @@ export default function PresenceOptionsEditor({
                   </option>
                 ))}
               </select>
-            </label>
+            </WideField>
           ))}
-        {o.showAddress && geocodeSensors.length === 0 && (
-          <p class={opt.dim}>
-            No geocoded-location sensors found (entity ids containing “geocoded”). Enable the
-            Geocoded Location sensor in the HA companion app.
-          </p>
-        )}
-
-        <TextSizeRow scale={fontScale} onChange={(pct) => set({ fontScale: pct })} />
-        <CardTitleRow pageId={pageId} element={element} />
-        <CardOpacityRow pageId={pageId} element={element} />
-        <div class={opt.footerRow}>
-          <button
-            class={opt.removeBtn}
-            onClick={() => {
-              removeElement(pageId, element.id);
-              onClose();
-            }}
-          >
-            Remove element
-          </button>
-          <button class={opt.doneBtn} onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </div>
-    </Modal>
+      </Section>
+    </OptionsDialog>
   );
 }

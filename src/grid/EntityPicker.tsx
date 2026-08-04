@@ -24,10 +24,13 @@ function entryName(en: EntityEntry): string {
 export function EntityPicker({
   onPick,
   filter,
+  current,
 }: {
   onPick: (entityId: string) => void;
   /** optional restriction, e.g. only sensors */
   filter?: (en: EntityEntry) => boolean;
+  /** the entity already selected — marked in the list and revealed on open */
+  current?: string;
 }) {
   const [query, setQuery] = useState('');
   const [expandedDevices, setExpandedDevices] = useState<ReadonlySet<string>>(new Set());
@@ -37,6 +40,15 @@ export function EntityPicker({
   }, []);
 
   const loaded = registriesLoaded.value;
+
+  // reveal the device holding the already-selected entity, so opening the
+  // picker doesn't mean hunting for what the card currently shows
+  useEffect(() => {
+    if (!loaded || !current) return;
+    const en = [...entitiesByArea.peek().values()].flat().find((e) => e.entity_id === current);
+    const dev = en ? deviceOf(en) : undefined;
+    if (dev) setExpandedDevices((prev) => new Set(prev).add(dev.id));
+  }, [loaded, current]);
   const q = query.trim().toLowerCase();
 
   const matches = (en: EntityEntry): boolean => {
@@ -66,13 +78,20 @@ export function EntityPicker({
   }
   const devices = [...byDevice.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name));
 
-  const pickRow = (en: EntityEntry) => (
-    <button class={styles.pickRow} onClick={() => onPick(en.entity_id)}>
-      <MdiIcon names={domainIconNames(en.entity_id, en.icon)} class={styles.rowIcon} />
-      <span class={styles.entityName}>{entryName(en)}</span>
-      <span class={styles.entityId}>{en.entity_id}</span>
-    </button>
-  );
+  const pickRow = (en: EntityEntry) => {
+    const active = !!current && en.entity_id === current;
+    return (
+      <button
+        class={`${styles.pickRow}${active ? ` ${styles.pickRowActive}` : ''}`}
+        aria-current={active ? 'true' : undefined}
+        onClick={() => onPick(en.entity_id)}
+      >
+        <MdiIcon names={domainIconNames(en.entity_id, en.icon)} class={styles.rowIcon} />
+        <span class={styles.entityName}>{entryName(en)}</span>
+        <span class={styles.entityId}>{en.entity_id}</span>
+      </button>
+    );
+  };
 
   return (
     <div class={styles.pickerPane}>
