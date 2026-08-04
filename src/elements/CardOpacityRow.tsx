@@ -89,7 +89,9 @@ export function CardOpacityRow({ pageId, element }: { pageId: string; element: G
           />
         </div>
       </div>
-      <MoveToPageRow pageId={pageId} element={element} />
+      {/* a collection element has its own page-targeting UI, so the generic
+          "move to page" row would just be confusing there */}
+      {element.type !== 'popup' && <MoveToPageRow pageId={pageId} element={element} />}
     </>
   );
 }

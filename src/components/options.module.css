@@ -149,6 +149,23 @@
   font-size: 0.85rem;
 }
 
+/* a text-link-style button for secondary actions ("…or link an existing page") */
+.linkBtn {
+  justify-self: start;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
 .footerRow {
   display: flex;
   align-items: center;
