@@ -41,6 +41,10 @@
 .form {
   padding: 16px 18px 18px;
   display: grid;
+  /* minmax(0,…) not 1fr: a grid track defaults to min-width:auto, so one long
+     unbreakable string (an entity id) would push the whole dialog wider than
+     the panel and give it a horizontal scrollbar */
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -57,6 +61,7 @@
 
 .sec {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 }
 
@@ -71,6 +76,7 @@
 
 .group {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
@@ -91,11 +97,15 @@
 
 .fieldLabel {
   flex: 0 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .fieldCtl {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   flex: 0 1 auto;
   min-width: 0;
@@ -215,6 +225,7 @@
  */
 .ovRow {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
 
@@ -222,11 +233,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
   min-height: 44px;
   font-size: var(--fs-sm);
   color: var(--text-dim);
 }
+
 
 .ovChip {
   display: inline-flex;
@@ -259,6 +273,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
   padding-left: 2px;
 }
 
@@ -338,35 +353,42 @@
 }
 
 .summaryText {
+  flex: 1 1 auto;
   min-width: 0;
+}
+
+/* block, not inline: overflow/text-overflow do nothing on an inline box, so
+   as spans these never truncated and a long entity id widened the dialog */
+.summaryName,
+.summaryId {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summaryName {
   font-size: var(--fs-sm);
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .summaryId {
   font-size: var(--fs-2xs);
   font-family: ui-monospace, monospace;
   color: var(--text-3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ---------- preview ---------- */
 
 .preview {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: stretch;
   min-height: 96px;
   padding: 14px;
   border-radius: var(--radius-sm);
   background: var(--bg);
+  overflow: hidden;
   /* look, don't touch: the preview renders the real live card, and a stray
      tap on it would toggle the actual device */
   pointer-events: none;

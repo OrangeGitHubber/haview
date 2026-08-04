@@ -15,6 +15,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { GridItem } from './GridItem';
 import { AddElementModal } from './AddElementModal';
+import { editOnArrive, openPageForEditing } from './editMode';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { GRID_COLS, type GridRect } from './types';
 import { collides, stackOrder } from './layout';
@@ -62,6 +63,12 @@ export default function GridPage({
   const page = settings.value.pages.find((p) => p.id === pageId);
   const narrow = useMediaQuery('(max-width: 699px)');
   const [editing, setEditing] = useState(false);
+  // arriving via "edit the cards inside this collection" lands here already in
+  // edit mode, so it's one tap rather than navigate-then-find-the-pencil.
+  // Read as .value (not .peek) so this component re-renders when the request
+  // arrives — the request is set just before navigating, and whether this
+  // GridPage remounts or is reused across the route change isn't guaranteed.
+  const wantEdit = editOnArrive.value === pageId && !readOnly;
   const [adding, setAdding] = useState(false);
   const [bgOpen, setBgOpen] = useState(false);
   const [bgMode, setBgMode] = useState<'none' | 'aurora' | 'image'>(() => {
@@ -70,6 +77,12 @@ export default function GridPage({
   });
   const [optionsFor, setOptionsFor] = useState<string | null>(null);
   const [moveFor, setMoveFor] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!wantEdit) return;
+    setEditing(true);
+    editOnArrive.value = null;
+  }, [wantEdit]);
   const [drag, setDrag] = useState<DragState | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -357,6 +370,15 @@ export default function GridPage({
               onRelocate={
                 settings.value.pages.length > 1 ? () => setMoveFor(el.id) : undefined
               }
+              onEditInside={(() => {
+                // a collection's cards live on the collection's own page, so
+                // the gear here can only ever edit the container
+                if (el.type !== 'popup') return undefined;
+                const targetId = el.options?.targetPageId;
+                if (typeof targetId !== 'string' || targetId === pageId) return undefined;
+                if (!settings.value.pages.some((p) => p.id === targetId)) return undefined;
+                return () => openPageForEditing(targetId);
+              })()}
             >
               {def ? (
                 <AsyncView load={def.load} props={{ pageId, element: el, editing }} />

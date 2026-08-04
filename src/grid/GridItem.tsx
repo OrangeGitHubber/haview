@@ -9,6 +9,10 @@ const X_ICON =
 const MOVE_ICON =
   'M19 13v6H5V5h6V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z';
 
+// pencil-in-a-box — edit the cards *inside* this collection (on its own page)
+const EDIT_INSIDE_ICON =
+  'M3 5a2 2 0 0 1 2-2h6v2H5v14h14v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm12.7-2.3a1 1 0 0 1 1.4 0l2.2 2.2a1 1 0 0 1 0 1.4l-7.1 7.1H9.4v-2.8l7.1-7.1z';
+
 /**
  * One absolutely-positioned grid element. In edit mode a transparent overlay
  * captures pointer drags (so card-internal buttons are inert), an SE handle
@@ -26,6 +30,7 @@ export function GridItem({
   onDelete,
   onOptions,
   onRelocate,
+  onEditInside,
   children,
 }: {
   style: JSX.CSSProperties;
@@ -41,6 +46,9 @@ export function GridItem({
   onOptions?: () => void;
   /** opens the "move this card to another page/collection" picker */
   onRelocate?: () => void;
+  /** collections only: open the collection's own page, in edit mode, so the
+      cards *inside* it can be edited (the gear edits the container itself) */
+  onEditInside?: () => void;
   children: ComponentChildren;
 }) {
   const press =
@@ -116,6 +124,19 @@ export function GridItem({
             >
               <svg viewBox="0 0 24 24">
                 <path d={GEAR_ICON} fill="currentColor" />
+              </svg>
+            </button>
+          )}
+          {onEditInside && (
+            <button
+              class={styles.editInsideBadge}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onEditInside}
+              aria-label="Edit the cards inside this collection"
+              title="Edit the cards inside this collection"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d={EDIT_INSIDE_ICON} fill="currentColor" />
               </svg>
             </button>
           )}

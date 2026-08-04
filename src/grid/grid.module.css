@@ -279,6 +279,34 @@
   height: 18px;
 }
 
+/* collections only — "edit the cards inside", which live on the collection's
+   own page (the gear next to it edits the container) */
+.editInsideBadge {
+  position: absolute;
+  top: -12px;
+  right: 114px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+
+.editInsideBadge:hover {
+  background: var(--accent-dim);
+}
+
+.editInsideBadge svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* ---------- "move card to…" picker ---------- */
 
 .moveList {
