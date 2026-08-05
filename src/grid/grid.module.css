@@ -602,6 +602,40 @@
   padding-left: 26px;
 }
 
+/* ---------- advanced (config/diagnostic) entity toggle ---------- */
+
+.advToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 2px;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.advToggle input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.advCount {
+  color: var(--text-3);
+}
+
+.catBadge {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-3);
+  font-size: var(--fs-2xs);
+  text-transform: lowercase;
+}
+
 /* ---------- single-pick entity browser (options editors) ---------- */
 
 .pickerPane {
@@ -712,7 +746,9 @@
   position: sticky;
   bottom: 0;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 12px 18px;
   background: var(--surface);

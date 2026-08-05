@@ -49,6 +49,45 @@ export const entityEntries = signal<EntityEntry[]>([]);
 export const labels = signal<LabelEntry[]>([]);
 export const registriesLoaded = signal(false);
 
+/**
+ * Include HA's `config` and `diagnostic` entities in the pickers.
+ *
+ * Off by default because a typical install has hundreds of them (battery
+ * levels, signal strength, uptime, firmware, per-integration toggles) and they
+ * drown the useful entities. But plenty of them ARE the thing you want on a
+ * wall board — UniFi firewall rules, for instance, are `switch.*` entities
+ * categorised as `config`.
+ *
+ * Device-local (a picker preference, not dashboard config), so it lives in
+ * localStorage rather than the versioned settings object.
+ */
+const ADVANCED_KEY = 'oranjehuis.showAdvancedEntities';
+
+function readAdvanced(): boolean {
+  try {
+    return localStorage.getItem(ADVANCED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export const showAdvancedEntities = signal<boolean>(readAdvanced());
+
+export function setShowAdvancedEntities(on: boolean): void {
+  showAdvancedEntities.value = on;
+  try {
+    localStorage.setItem(ADVANCED_KEY, on ? '1' : '0');
+  } catch {
+    /* private mode — the toggle still works for this session */
+  }
+}
+
+/** How many entities the advanced toggle would add (for the toggle's hint). */
+export const advancedEntityCount: ReadonlySignal<number> = computed(
+  () =>
+    entityEntries.value.filter((e) => e.disabled_by === null && e.entity_category !== null).length,
+);
+
 let started = false;
 let refetchTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -129,16 +168,23 @@ export function deviceOf(entry: EntityEntry): DeviceEntry | undefined {
 }
 
 /**
- * Pickable entities grouped by area id ('' = no area, last). Excludes
- * disabled entities and config/diagnostic entities — v1 keeps the picker
- * simple; a "show more" toggle can widen this later.
+ * Pickable entities grouped by area id ('' = no area, last). Always excludes
+ * disabled entities; excludes config/diagnostic ones unless the advanced
+ * toggle is on (see showAdvancedEntities).
+ *
+ * Note `hidden_by` is deliberately NOT filtered: hiding an entity in HA hides
+ * it from HA's own dashboards, but people hide things there and still want
+ * them on this board, and filtering it here would silently remove entities
+ * that are pickable today.
  */
 export const entitiesByArea: ReadonlySignal<Map<string, EntityEntry[]>> = computed(() => {
+  const advanced = showAdvancedEntities.value;
   const groups = new Map<string, EntityEntry[]>();
   for (const area of areas.value) groups.set(area.area_id, []);
   const noArea: EntityEntry[] = [];
   for (const entry of entityEntries.value) {
-    if (entry.disabled_by !== null || entry.entity_category !== null) continue;
+    if (entry.disabled_by !== null) continue;
+    if (!advanced && entry.entity_category !== null) continue;
     const areaId = effectiveAreaId(entry);
     const bucket = areaId !== null ? groups.get(areaId) : undefined;
     if (bucket) bucket.push(entry);

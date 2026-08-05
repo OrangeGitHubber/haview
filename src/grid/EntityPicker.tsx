@@ -9,6 +9,7 @@ import {
 } from '../lib/ha/registries';
 import { MdiIcon } from '../components/MdiIcon';
 import { domainIconNames } from '../lib/entityIcons';
+import { AdvancedEntitiesToggle, CategoryBadge } from './AdvancedEntitiesToggle';
 import styles from './grid.module.css';
 
 function entryName(en: EntityEntry): string {
@@ -88,6 +89,7 @@ export function EntityPicker({
       >
         <MdiIcon names={domainIconNames(en.entity_id, en.icon)} class={styles.rowIcon} />
         <span class={styles.entityName}>{entryName(en)}</span>
+        <CategoryBadge entry={en} />
         <span class={styles.entityId}>{en.entity_id}</span>
       </button>
     );
@@ -110,7 +112,11 @@ export function EntityPicker({
             <div class={styles.skeletonRow} />
           </>
         )}
-        {loaded && list.length === 0 && <p class={styles.noResults}>No devices match.</p>}
+        {loaded && list.length === 0 && (
+          <p class={styles.noResults}>
+            {q ? 'No devices match.' : 'Nothing pickable — try showing config entities below.'}
+          </p>
+        )}
         <ul class={styles.entityList}>
           {devices.map(([devId, g]) => {
             const open = q !== '' || expandedDevices.has(devId);
@@ -145,6 +151,7 @@ export function EntityPicker({
           ))}
         </ul>
       </div>
+      <AdvancedEntitiesToggle />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { elementDefs } from './elements';
 import { findFreeSlot } from './layout';
 import { MdiIcon } from '../components/MdiIcon';
 import { domainIconNames } from '../lib/entityIcons';
+import { AdvancedEntitiesToggle, CategoryBadge } from './AdvancedEntitiesToggle';
 import styles from './grid.module.css';
 
 function entryName(en: EntityEntry): string {
@@ -98,6 +99,7 @@ export function AddElementModal({
       />
       <MdiIcon names={domainIconNames(en.entity_id, en.icon)} class={styles.rowIcon} />
       <span class={styles.entityName}>{entryName(en)}</span>
+      <CategoryBadge entry={en} />
       <span class={styles.entityId}>{en.entity_id}</span>
     </label>
   );
@@ -347,8 +349,10 @@ export function AddElementModal({
       <div class={styles.pickerBody}>{body}</div>
       {tab !== 'widgets' && (
         <div class={styles.pickerFooter}>
+          <AdvancedEntitiesToggle />
           <button class={styles.addManyBtn} disabled={checked.size === 0} onClick={submit}>
-            Add {checked.size || ''} device{checked.size === 1 ? '' : 's'}
+            {/* these are entities, not devices — a device usually has several */}
+            Add {checked.size || ''} card{checked.size === 1 ? '' : 's'}
           </button>
         </div>
       )}
