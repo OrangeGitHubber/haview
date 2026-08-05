@@ -95,6 +95,7 @@ The rebuild landed (see Shipped). What's left from
 [`entity-card-settings-review.md`](entity-card-settings-review.md):
 - [ ] `aria-pressed` / `role="radio"` on the pill segments. The groups are now labelled (`role="group"` + `aria-labelledby`) and the active pill has a non-colour ✓ cue, but the pills are still plain buttons, so a screen reader doesn't announce which is selected.
 - [x] ~~Delete the two files the refactor orphaned — `CardOpacityRow.tsx` and `FontSizeRow.tsx`.~~ Done 2026-08-04.
+- [ ] **Decision needed:** should entities you've *hidden* in HA also be hidden in the pickers? `hidden_by` is read into `EntityEntry` but never filtered on, so hidden entities are pickable while diagnostic ones (until 833cefe) were not. Filtering it is one line but *removes* currently-pickable entities, so it needs an explicit yes.
 - [ ] `moveElementToPage` undo restores the page but not the original slot (it re-places into the first free slot both ways). Fine in practice; worth a note if slots ever matter.
 
 ---
